@@ -24,10 +24,13 @@ The quickest way while working on tests is to start the stack once and keep it r
 .. code-block:: bash
 
     docker compose -p openzaak-api-test up -d --wait
-    pytest --reuse-openzaak-service --record-mode=all
+    pytest --reuse-openzaak-service --record-mode=rewrite
 
 The database is reset before each test, and the API credentials from
 ``docker/open-zaak/setup_configuration/`` are applied again.
+
+Use ``rewrite`` rather than ``all``: ``all`` adds to an existing cassette, so requests
+a test no longer makes stay in it. You can also pass a single test file or test.
 
 To re-record all cassettes against a fresh stack, which is spawned and removed by the
 test run, use the convenience script in the root of the repository:
