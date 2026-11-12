@@ -8,27 +8,43 @@ def pytest_addoption(parser):
         "--with-openzaak-service",
         action="store_true",
         default=False,
-        help="Whether to seed a fresh Open Zaak Docker instance for each test",
+        help=(
+            "Spawn a fresh Open Zaak Docker stack for the test run, and reset its "
+            "database before each test. Needed to (re-)record the VCR cassettes."
+        ),
+    )
+    parser.addoption(
+        "--reuse-openzaak-service",
+        action="store_true",
+        default=False,
+        help=(
+            "Like --with-openzaak-service, but use an Open Zaak stack that is already "
+            "running (`docker compose -p openzaak-api-test up -d --wait`)."
+        ),
     )
 
 
-@pytest.fixture(scope="session", autouse=True)
-def openzaak_service_singleton(request):
-    # Depending on whether we're working with a live service or not, we either
-    # spawn the service and yield the running service, or simply return a
-    # regular instance for the purposes of using the client factory in the
-    # client fixture. We split the fixtures up because the service singleton
-    # should be session-scoped, spawning the service at the start of the run
-    # and tearing it down at completion of the run.
-    #
-    # The client fixture below, by cotrast, should reset the database state
-    # for each test.
-    service = OpenZaakServiceManager()
-    if request.config.getoption("--with-openzaak-service"):
-        with service.live_service() as running_service:
-            yield running_service
-    else:
+@pytest.fixture(scope="session")
+def openzaak_service(request):
+    """
+    ``None`` when replaying cassettes.
+    """
+    if request.config.getoption("--reuse-openzaak-service"):
+        yield OpenZaakServiceManager()
+        return
+
+    if not request.config.getoption("--with-openzaak-service"):
+        yield None
+        return
+
+    with OpenZaakServiceManager().live_service() as service:
         yield service
+
+
+@pytest.fixture(autouse=True)
+def clean_openzaak_state(openzaak_service: OpenZaakServiceManager | None):
+    if openzaak_service is not None:
+        openzaak_service.reset_db_state()
 
 
 @pytest.fixture(scope="session")
@@ -41,6 +57,6 @@ def vcr_config():
             "port",
             "path",
             "query",
-            # "body",
         ],
+        "filter_headers": ["authorization"],
     }

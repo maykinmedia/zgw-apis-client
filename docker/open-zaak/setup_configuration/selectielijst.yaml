@@ -1,0 +1,20 @@
+# Only loaded after a database reset. The migrations set this up on a fresh
+# database, but a reset wipes it.
+
+zgw_consumers_config_enable: true
+zgw_consumers:
+  services:
+    - identifier: selectielijst
+      label: VNG Selectielijst
+      api_root: https://selectielijst.openzaak.nl/api/v1/
+      api_connection_check_path: procestypen
+      api_type: orc
+      auth_type: no_auth
+
+openzaak_selectielijst_config_enable: true
+openzaak_selectielijst_config:
+  selectielijst_api_service_identifier: selectielijst
+  allowed_years:
+    - 2017
+    - 2020
+  default_year: 2020

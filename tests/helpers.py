@@ -1,31 +1,65 @@
 import logging
 import subprocess
 import time
+from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
 
+import jwt
 import requests
 
-CURRENT_DIR = Path(__file__).resolve()
 BASE_DIR = Path(__file__).parent.parent.resolve()
+
+OPENZAAK_ROOT = "http://localhost:8339"
+CATALOGI_API_ROOT = f"{OPENZAAK_ROOT}/catalogi/api/v1/"
+ZAKEN_API_ROOT = f"{OPENZAAK_ROOT}/zaken/api/v1/"
+DOCUMENTEN_API_ROOT = f"{OPENZAAK_ROOT}/documenten/api/v1/"
+
+# same as in docker/open-zaak/setup_configuration/data.yaml
+CLIENT_ID = "test-client-id"
+SECRET = "test-secret-for-the-zgw-apis-client-tests"
 
 logger = logging.getLogger(__name__)
 
 
+def generate_jwt(
+    client_id: str = CLIENT_ID,
+    secret: str = SECRET,
+    *,
+    user_id: str = "test-user",
+    user_representation: str = "Test User",
+    valid_for: int = 60 * 60,
+) -> str:
+    """
+    Same claims as zgw-consumers' ``ZGWAuth``.
+    """
+    issued_at = int(time.time())
+    payload = {
+        "iss": client_id,
+        "iat": issued_at,
+        "exp": issued_at + valid_for,
+        "client_id": client_id,
+        "user_id": user_id,
+        "user_representation": user_representation,
+    }
+    return jwt.encode(payload, secret, algorithm="HS256")
+
+
 class OpenZaakServiceManager:
-    _in_server_context: bool = False
+    """
+    Manage the Open Zaak docker compose stack defined in ``docker-compose.yaml``.
+
+    Only used when (re-)recording the VCR cassettes, see ``docs/testing.rst``.
+    """
+
     _django_service_name: str = "web"
-    _api_root: str = "http://localhost:8339"
     _docker_compose_project_name: str = "openzaak-api-test"
     _docker_compose_path: Path = BASE_DIR / "docker-compose.yaml"
 
-    def _docker_compose(
-        self,
-        *args: str,
-        check: bool = True,
-        input: str | None = None,
-    ):
-        input_data = {"text": True, "input": input} if input else {}
+    def __init__(self):
+        self._in_server_context = False
+
+    def _docker_compose(self, *args: str, check: bool = True):
         try:
             return subprocess.run(
                 args=[
@@ -39,7 +73,7 @@ class OpenZaakServiceManager:
                 ],
                 check=check,
                 capture_output=True,
-                **input_data,
+                text=True,
             )
         except subprocess.CalledProcessError as exc:
             logger.exception(
@@ -49,60 +83,51 @@ class OpenZaakServiceManager:
             )
             raise
 
-    def _manage_py(
-        self,
-        *args: str,
-        input: str | None = None,
-    ):
+    def _manage_py(self, *args: str):
         self._docker_compose(
-            "run",
-            "--rm",
+            "exec",
+            "-T",
             self._django_service_name,
             "python",
             "src/manage.py",
             *args,
-            input=input,
         )
 
     def _service_teardown(self):
-        self._docker_compose("kill", check=False)
-        self._docker_compose("down", "-v")
-        self._docker_compose("rm", "-f")
+        self._docker_compose("down", "--volumes", check=False)
 
     def _service_init(self):
-        self._docker_compose("up", "-d")
+        self._docker_compose("up", "--detach", "--wait")
         self._wait_for_response()
-        self._manage_py("migrate")
 
     def reset_db_state(self):
-        self._manage_py("flush", "--no-input")
-        # self._load_fixture_from_json_string(self._generate_token_fixture())
+        """
+        Remove all data, and re-apply the setup configuration.
 
-    def _load_fixture_from_json_string(self, fixture: str):
-        self._manage_py(
-            "loaddata",
-            "--format",
-            "json",
-            "-",  # i.e. stdin
-            input=fixture,
-        )
+        Flushing also removes the Selectielijst API configuration created by the
+        Open Zaak migrations, so that is restored too.
+        """
+        self._manage_py("flush", "--no-input")
+        for config_file in ("data.yaml", "selectielijst.yaml"):
+            self._manage_py(
+                "setup_configuration",
+                "--yaml-file",
+                f"setup_configuration/{config_file}",
+            )
 
     def _wait_for_response(self, interval=0.5, max_wait=60):
         start_time = time.time()
         while True:
             try:
-                response = requests.get(self._api_root)
-                return response
+                return requests.get(OPENZAAK_ROOT)
             except requests.RequestException:
                 logger.debug("Exception while checking for liveness", exc_info=True)
                 elapsed_time = time.time() - start_time
                 if elapsed_time > max_wait:
-                    logger.info("Max wait time exceeded.")
                     raise RuntimeError(
                         f"Maximum wait for service to be healthy exceeded: "
                         f"{elapsed_time} > {max_wait}"
                     ) from None
-
                 time.sleep(interval)
 
     def setUp(self):
@@ -120,53 +145,9 @@ class OpenZaakServiceManager:
         self._in_server_context = False
 
     @contextmanager
-    def clean_state(self):
-        """Yield a client configured to talk a live OpenZaak service.
-
-        Note that this requires the live server to have been spawned,
-        either imperatively:
-
-            service.setUp()
-            with service.clean_state() as client:
-                client.do_stuff()
-
-            service.tearDown()
-
-        ... or using the live_service() context manager:
-
-            with service.live_server_manager() as live_service:
-                with live_service.clean_state() as client:
-                    client.do_something()
-
-        """
-        if not self._in_server_context:
-            raise RuntimeError(
-                "You must execute this context within the server context"
-            )
-
-        def clean_state_manager(*args, **kwds):
-            self.reset_db_state()
-            yield
-
-        return clean_state_manager()
-
-    @contextmanager
-    def live_service(self):
-        """Context manager to spawn a live OpenZaak service and clean it up.
-
-        You will commonly nest a clean_state() context manager within the
-        live_service block, for instance:
-
-            with service.live_server_manager() as live_service:
-                with live_service.clean_state() as client:
-                    client.do_something()
-        """
-
-        def live_server_manager(*args, **kwds):
-            try:
-                self.setUp()
-                yield self
-            finally:
-                self.tearDown()
-
-        return live_server_manager()
+    def live_service(self) -> Iterator["OpenZaakServiceManager"]:
+        try:
+            self.setUp()
+            yield self
+        finally:
+            self.tearDown()

@@ -45,7 +45,8 @@ tests = [
     "vcrpy",
     "pytest-recording",
     "types-requests",
-    "pytest-cov"
+    "pytest-cov",
+    "pyjwt",
 ]
 docs = [
     "sphinx",
