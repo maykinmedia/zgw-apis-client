@@ -3,7 +3,8 @@ from __future__ import annotations
 import copy
 import logging
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, ClassVar, Self
+from uuid import UUID
 
 import msgspec
 import requests
@@ -28,6 +29,8 @@ class BaseResource[C: ZGWClient]:
             def retrieve(self, ...) -> ...:
                 ...
     """
+
+    base_path: ClassVar[str] = ""
 
     _name: str = ""
     _http_client: C | None = None
@@ -75,6 +78,46 @@ class BaseResource[C: ZGWClient]:
         response_data = response.json()
         # for now: assume no errors :)
         return msgspec.convert(response_data, type=struct_type)
+
+    def _detail_path(self, identifier: str | UUID) -> str:
+        # Accept a full URL too, since that's what you get in e.g. ``zaak.zaaktype``.
+        # ape-pie checks that it's under the base URL.
+        identifier = str(identifier)
+        if identifier.startswith(("http://", "https://")):
+            return identifier
+        return f"{self.base_path}/{identifier}"
+
+    def _list_resources[T](
+        self,
+        struct_type: type[T],
+        *,
+        params: msgspec.Struct | None = None,
+        headers: Mapping | None = None,
+    ) -> T:
+        response = self._get(self.base_path, headers=headers, params=params)
+        return self.process_response(response, struct_type)
+
+    def _retrieve_resource[T](
+        self,
+        identifier: str | UUID,
+        struct_type: type[T],
+        *,
+        headers: Mapping | None = None,
+    ) -> T:
+        response = self._get(self._detail_path(identifier), headers=headers)
+        return self.process_response(response, struct_type)
+
+    def _create_resource[T](
+        self,
+        data: msgspec.Struct,
+        struct_type: type[T],
+        *,
+        headers: Mapping | None = None,
+    ) -> T:
+        response = self._post(
+            self.base_path, headers=headers, data=msgspec.to_builtins(data)
+        )
+        return self.process_response(response, struct_type)
 
     def _get(
         self,
