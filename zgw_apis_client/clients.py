@@ -3,6 +3,12 @@ from collections.abc import MutableMapping
 from ape_pie import APIClient
 from ape_pie.typing import ConfigAdapter
 
+from .resources.cases import (
+    CaseDocumentResource,
+    CaseResource,
+    RoleResource,
+    StatusResource,
+)
 from .resources.catalogi import (
     CaseTypeDocumentTypeResource,
     CaseTypeResource,
@@ -71,6 +77,11 @@ class CasesClient(ZGWClient):
     """
     Client class for the cases API ("Zaken API").
     """
+
+    case = CaseResource()
+    status = StatusResource()
+    role = RoleResource()
+    case_document = CaseDocumentResource()
 
 
 class DocumentsClient(ZGWClient):
