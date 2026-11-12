@@ -163,7 +163,7 @@ class BaseResource[C: ZGWClient]:
     ) -> requests.Response:
         query_params = msgspec.to_builtins(params)
         response = self.http_client.request(
-            "delete",
+            "options",
             path,
             headers=headers,
             params=query_params,
