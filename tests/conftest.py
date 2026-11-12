@@ -1,6 +1,11 @@
 import pytest
 
-from tests.helpers import OpenZaakServiceManager
+from tests.helpers import (
+    CATALOGI_API_ROOT,
+    OpenZaakServiceManager,
+    generate_jwt,
+)
+from zgw_apis_client import CatalogiClient
 
 
 def pytest_addoption(parser):
@@ -60,3 +65,9 @@ def vcr_config():
         ],
         "filter_headers": ["authorization"],
     }
+
+
+@pytest.fixture
+def catalogi_client():
+    with CatalogiClient(CATALOGI_API_ROOT, bearer_token=generate_jwt()) as client:
+        yield client
