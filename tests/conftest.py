@@ -2,10 +2,11 @@ import pytest
 
 from tests.helpers import (
     CATALOGI_API_ROOT,
+    DOCUMENTEN_API_ROOT,
     OpenZaakServiceManager,
     generate_jwt,
 )
-from zgw_apis_client import CatalogiClient
+from zgw_apis_client import CatalogiClient, DocumentsClient
 
 
 def pytest_addoption(parser):
@@ -70,4 +71,10 @@ def vcr_config():
 @pytest.fixture
 def catalogi_client():
     with CatalogiClient(CATALOGI_API_ROOT, bearer_token=generate_jwt()) as client:
+        yield client
+
+
+@pytest.fixture
+def documents_client():
+    with DocumentsClient(DOCUMENTEN_API_ROOT, bearer_token=generate_jwt()) as client:
         yield client

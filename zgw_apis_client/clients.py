@@ -12,6 +12,7 @@ from .resources.catalogi import (
     RoleTypeResource,
     StatusTypeResource,
 )
+from .resources.documents import DocumentResource
 
 
 class ZGWClient(APIClient):
@@ -70,3 +71,11 @@ class CasesClient(ZGWClient):
     """
     Client class for the cases API ("Zaken API").
     """
+
+
+class DocumentsClient(ZGWClient):
+    """
+    Client class for the documents API ("Documenten API").
+    """
+
+    document = DocumentResource()
