@@ -3,13 +3,35 @@ from collections.abc import MutableMapping
 from ape_pie import APIClient
 from ape_pie.typing import ConfigAdapter
 
-# from .resources.cases import (
-#     CaseResource,
-#     RoleResource,
-# )
+from .resources.cases import (
+    CaseDocumentResource,
+    CaseResource,
+    RoleResource,
+    StatusResource,
+)
+from .resources.catalogi import (
+    CaseTypeDocumentTypeResource,
+    CaseTypeResource,
+    CatalogueResource,
+    DocumentTypeResource,
+    ResultTypeResource,
+    RoleTypeResource,
+    StatusTypeResource,
+)
+from .resources.documents import DocumentResource
 
 
 class ZGWClient(APIClient):
+    """
+    Base client for the ZGW APIs.
+
+    ``base_url`` is the API root, e.g. ``https://open-zaak.example.com/zaken/api/v1/``.
+
+    In a Django project, use :meth:`configure_from` with a zgw-consumers service, which
+    takes care of the (JWT) authentication. Alternatively, pass a ready-made token as
+    ``bearer_token``.
+    """
+
     def __init__(
         self,
         base_url: str,
@@ -37,10 +59,34 @@ class ZGWClient(APIClient):
         return cls(base_url, request_kwargs=session_kwargs, **kwargs)
 
 
+class CatalogiClient(ZGWClient):
+    """
+    Client class for the catalogue API ("Catalogi API").
+    """
+
+    catalogue = CatalogueResource()
+    case_type = CaseTypeResource()
+    case_type_document_type = CaseTypeDocumentTypeResource()
+    document_type = DocumentTypeResource()
+    status_type = StatusTypeResource()
+    result_type = ResultTypeResource()
+    role_type = RoleTypeResource()
+
+
 class CasesClient(ZGWClient):
     """
     Client class for the cases API ("Zaken API").
     """
 
-    # case = CaseResource()
-    # role = RoleResource()
+    case = CaseResource()
+    status = StatusResource()
+    role = RoleResource()
+    case_document = CaseDocumentResource()
+
+
+class DocumentsClient(ZGWClient):
+    """
+    Client class for the documents API ("Documenten API").
+    """
+
+    document = DocumentResource()
