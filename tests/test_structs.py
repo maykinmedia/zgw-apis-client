@@ -144,6 +144,6 @@ def test_create_validates_payload_before_sending():
         patch.object(CasesClient, "request") as mock_request,
         pytest.raises(msgspec.ValidationError, match=r"\$\.statustype"),
     ):
-        client.status.create(data)
+        client.status.create(data=data)
 
     mock_request.assert_not_called()

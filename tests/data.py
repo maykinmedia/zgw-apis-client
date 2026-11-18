@@ -43,7 +43,7 @@ RESULTAATTYPEOMSCHRIJVING_AFGEHANDELD = (
 
 def create_catalogue(client: CatalogiClient) -> Catalogue:
     return client.catalogue.create(
-        CatalogueCreateData(
+        data=CatalogueCreateData(
             domein="TEST",
             rsin=RSIN,
             contactpersoon_beheer_naam="Test",
@@ -60,7 +60,7 @@ def create_document_type(
     publish: bool = True,
 ) -> DocumentType:
     document_type = client.document_type.create(
-        DocumentTypeCreateData(
+        data=DocumentTypeCreateData(
             catalogus=catalogue.url,
             omschrijving=omschrijving,
             vertrouwelijkheidaanduiding="openbaar",
@@ -69,7 +69,7 @@ def create_document_type(
         )
     )
     if publish:
-        document_type = client.document_type.publish(document_type.url)
+        document_type = client.document_type.publish(identifier=document_type.url)
     return document_type
 
 
@@ -81,7 +81,7 @@ def create_concept_case_type(
     omschrijving: str = "Test case type",
 ) -> CaseType:
     return client.case_type.create(
-        CaseTypeCreateData(
+        data=CaseTypeCreateData(
             catalogus=catalogue.url,
             identificatie=identificatie,
             omschrijving=omschrijving,
@@ -126,7 +126,7 @@ def create_published_case_type(
     case_type = create_concept_case_type(client, catalogue)
 
     client.case_type_document_type.create(
-        CaseTypeDocumentTypeCreateData(
+        data=CaseTypeDocumentTypeCreateData(
             zaaktype=case_type.url,
             informatieobjecttype=document_type.url,
             volgnummer=1,
@@ -135,24 +135,24 @@ def create_published_case_type(
     )
     status_types = (
         client.status_type.create(
-            StatusTypeCreateData(
+            data=StatusTypeCreateData(
                 zaaktype=case_type.url, omschrijving="Received", volgnummer=1
             )
         ),
         client.status_type.create(
-            StatusTypeCreateData(
+            data=StatusTypeCreateData(
                 zaaktype=case_type.url, omschrijving="In progress", volgnummer=2
             )
         ),
         # final status: Open Zaak only accepts it once the case has a result
         client.status_type.create(
-            StatusTypeCreateData(
+            data=StatusTypeCreateData(
                 zaaktype=case_type.url, omschrijving="Closed", volgnummer=3
             )
         ),
     )
     result_type = client.result_type.create(
-        ResultTypeCreateData(
+        data=ResultTypeCreateData(
             zaaktype=case_type.url,
             omschrijving="Handled",
             resultaattypeomschrijving=RESULTAATTYPEOMSCHRIJVING_AFGEHANDELD,
@@ -165,13 +165,13 @@ def create_published_case_type(
         )
     )
     role_type = client.role_type.create(
-        RoleTypeCreateData(
+        data=RoleTypeCreateData(
             zaaktype=case_type.url,
             omschrijving="Case handler",
             omschrijving_generiek="behandelaar",
         )
     )
-    case_type = client.case_type.publish(case_type.url)
+    case_type = client.case_type.publish(identifier=case_type.url)
 
     return PublishedCaseType(
         case_type=case_type,

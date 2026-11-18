@@ -54,7 +54,7 @@ def test_list_case_types(catalogi_client: CatalogiClient):
 def test_list_case_types_filtered_by_catalogue(catalogi_client: CatalogiClient):
     published = create_published_case_type(catalogi_client).case_type
     other_catalogue = catalogi_client.catalogue.create(
-        CatalogueCreateData(
+        data=CatalogueCreateData(
             domein="OTHER", rsin=RSIN, contactpersoon_beheer_naam="Other"
         )
     )
@@ -75,8 +75,8 @@ def test_retrieve_case_type_by_uuid_and_url(catalogi_client: CatalogiClient):
     case_type = create_published_case_type(catalogi_client).case_type
     uuid = case_type.url.rsplit("/", 1)[-1]
 
-    by_url = catalogi_client.case_type.retrieve(case_type.url)
-    by_uuid = catalogi_client.case_type.retrieve(uuid)
+    by_url = catalogi_client.case_type.retrieve(identifier=case_type.url)
+    by_uuid = catalogi_client.case_type.retrieve(identifier=uuid)
 
     assert by_url == by_uuid == case_type
 
@@ -89,7 +89,7 @@ def test_retrieve_and_list_document_types(catalogi_client: CatalogiClient):
         catalogi_client, catalogue, omschrijving="Draft", publish=False
     )
 
-    retrieved = catalogi_client.document_type.retrieve(published.url)
+    retrieved = catalogi_client.document_type.retrieve(identifier=published.url)
     assert retrieved.omschrijving == "Letter"
     assert not retrieved.concept
 
@@ -110,11 +110,13 @@ def test_retrieve_and_list_status_types(catalogi_client: CatalogiClient):
     setup = create_published_case_type(catalogi_client)
     received, in_progress, closed = setup.status_types
 
-    retrieved = catalogi_client.status_type.retrieve(closed.url)
+    retrieved = catalogi_client.status_type.retrieve(identifier=closed.url)
     assert retrieved.omschrijving == "Closed"
     assert retrieved.volgnummer == 3
     assert retrieved.is_eindstatus
-    assert not catalogi_client.status_type.retrieve(received.url).is_eindstatus
+    assert not catalogi_client.status_type.retrieve(
+        identifier=received.url
+    ).is_eindstatus
     assert retrieved.zaaktype == setup.case_type.url
 
     page = catalogi_client.status_type.list(
@@ -132,7 +134,7 @@ def test_retrieve_and_list_status_types(catalogi_client: CatalogiClient):
 def test_retrieve_and_list_result_types(catalogi_client: CatalogiClient):
     setup = create_published_case_type(catalogi_client)
 
-    retrieved = catalogi_client.result_type.retrieve(setup.result_type.url)
+    retrieved = catalogi_client.result_type.retrieve(identifier=setup.result_type.url)
     assert retrieved.omschrijving == "Handled"
     assert retrieved.archiefnominatie == "vernietigen"
     assert retrieved.brondatum_archiefprocedure is not None
@@ -148,7 +150,7 @@ def test_retrieve_and_list_result_types(catalogi_client: CatalogiClient):
 def test_retrieve_and_list_role_types(catalogi_client: CatalogiClient):
     setup = create_published_case_type(catalogi_client)
 
-    retrieved = catalogi_client.role_type.retrieve(setup.role_type.url)
+    retrieved = catalogi_client.role_type.retrieve(identifier=setup.role_type.url)
     assert retrieved.omschrijving == "Case handler"
     assert retrieved.omschrijving_generiek == "behandelaar"
 

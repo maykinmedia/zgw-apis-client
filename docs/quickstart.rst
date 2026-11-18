@@ -55,7 +55,7 @@ Outside of Django, pass the API root and a ready-made token:
         "https://openzaak.example.com/catalogi/api/v1/",
         bearer_token=token,
     ) as client:
-        case_type = client.case_type.retrieve(case.zaaktype)
+        case_type = client.case_type.retrieve(identifier=case.zaaktype)
 
 ``retrieve`` takes a UUID or a full URL, so you can pass e.g. ``case.zaaktype``
 directly.

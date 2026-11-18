@@ -30,7 +30,7 @@ def _create_case(
     client: CasesClient, setup: PublishedCaseType, *, omschrijving: str
 ) -> Case:
     return client.case.create(
-        CaseCreateData(
+        data=CaseCreateData(
             zaaktype=setup.case_type.url,
             bronorganisatie=RSIN,
             verantwoordelijke_organisatie=RSIN,
@@ -45,7 +45,7 @@ def test_create_and_retrieve_case(
     cases_client: CasesClient, published_case_type: PublishedCaseType
 ):
     case = cases_client.case.create(
-        CaseCreateData(
+        data=CaseCreateData(
             zaaktype=published_case_type.case_type.url,
             bronorganisatie=RSIN,
             verantwoordelijke_organisatie=RSIN,
@@ -60,8 +60,8 @@ def test_create_and_retrieve_case(
     assert case.status is None
     assert case.einddatum is None
 
-    by_url = cases_client.case.retrieve(case.url)
-    by_uuid = cases_client.case.retrieve(case.uuid)
+    by_url = cases_client.case.retrieve(identifier=case.url)
+    by_uuid = cases_client.case.retrieve(identifier=case.uuid)
     assert by_url.omschrijving == by_uuid.omschrijving == "Broken street light"
 
 
@@ -103,7 +103,7 @@ def test_statuses(cases_client: CasesClient, published_case_type: PublishedCaseT
     case = _create_case(cases_client, published_case_type, omschrijving="Statuses")
 
     first = cases_client.status.create(
-        StatusCreateData(
+        data=StatusCreateData(
             zaak=case.url,
             statustype=received.url,
             datum_status_gezet=datetime(2026, 2, 1, 9, 0, tzinfo=UTC),
@@ -111,14 +111,14 @@ def test_statuses(cases_client: CasesClient, published_case_type: PublishedCaseT
         )
     )
     second = cases_client.status.create(
-        StatusCreateData(
+        data=StatusCreateData(
             zaak=case.url,
             statustype=in_progress.url,
             datum_status_gezet=datetime(2026, 2, 2, 9, 0, tzinfo=UTC),
         )
     )
 
-    retrieved = cases_client.status.retrieve(first.url)
+    retrieved = cases_client.status.retrieve(identifier=first.url)
     assert retrieved.statustoelichting == "Request received"
     assert retrieved.statustype == received.url
     assert retrieved.datum_status_gezet == datetime(2026, 2, 1, 9, 0, tzinfo=UTC)
@@ -131,7 +131,7 @@ def test_statuses(cases_client: CasesClient, published_case_type: PublishedCaseT
     )
     assert [status.url for status in page.results] == [second.url]
 
-    assert cases_client.case.retrieve(case.url).status == second.url
+    assert cases_client.case.retrieve(identifier=case.url).status == second.url
 
 
 @pytest.mark.vcr
@@ -141,7 +141,7 @@ def test_employee_roles(
     case = _create_case(cases_client, published_case_type, omschrijving="Roles")
 
     role = cases_client.role.create(
-        EmployeeRoleCreateData(
+        data=EmployeeRoleCreateData(
             zaak=case.url,
             roltype=published_case_type.role_type.url,
             roltoelichting="Assigned case handler",
@@ -159,7 +159,7 @@ def test_employee_roles(
     assert role.betrokkene_identificatie is not None
     assert role.betrokkene_identificatie.achternaam == "Jansen"
 
-    retrieved = cases_client.role.retrieve(role.url)
+    retrieved = cases_client.role.retrieve(identifier=role.url)
     assert retrieved == role
 
     page = cases_client.role.list(params=RoleListParams(zaak=case.url))
@@ -195,7 +195,7 @@ def test_case_documents(
 ):
     case = _create_case(cases_client, published_case_type, omschrijving="Documents")
     document = documents_client.document.create(
-        DocumentCreateData(
+        data=DocumentCreateData(
             bronorganisatie=RSIN,
             creatiedatum=date(2026, 2, 1),
             titel="Photo of the street light",
@@ -208,7 +208,7 @@ def test_case_documents(
     )
 
     case_document = cases_client.case_document.create(
-        CaseDocumentCreateData(zaak=case.url, informatieobject=document.url)
+        data=CaseDocumentCreateData(zaak=case.url, informatieobject=document.url)
     )
     assert case_document.zaak == case.url
     assert case_document.informatieobject == document.url

@@ -34,7 +34,7 @@ def test_create_and_retrieve_document(
     documents_client: DocumentsClient, document_type: DocumentType
 ):
     document = documents_client.document.create(
-        DocumentCreateData(
+        data=DocumentCreateData(
             bronorganisatie=RSIN,
             creatiedatum=date(2026, 2, 1),
             titel="Letter",
@@ -56,17 +56,17 @@ def test_create_and_retrieve_document(
     assert document.inhoud is not None
     assert document.inhoud.startswith("http://")
 
-    retrieved = documents_client.document.retrieve(document.url)
+    retrieved = documents_client.document.retrieve(identifier=document.url)
     assert retrieved == document
 
 
 @pytest.mark.vcr
 def test_list_documents(documents_client: DocumentsClient, document_type: DocumentType):
     first = documents_client.document.create(
-        _document_data(document_type, titel="first")
+        data=_document_data(document_type, titel="first")
     )
     second = documents_client.document.create(
-        _document_data(document_type, titel="second")
+        data=_document_data(document_type, titel="second")
     )
 
     page = documents_client.document.list()

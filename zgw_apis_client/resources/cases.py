@@ -47,10 +47,10 @@ class CaseResource(BaseResource["CasesClient"]):
             PaginatedResponseBody[Case], params=params, headers={"Accept-Crs": CRS}
         )
 
-    def retrieve(self, identifier: str | UUID) -> Case:
+    def retrieve(self, *, identifier: str | UUID) -> Case:
         return self._retrieve_resource(identifier, Case, headers={"Accept-Crs": CRS})
 
-    def create(self, data: CaseCreateData) -> Case:
+    def create(self, *, data: CaseCreateData) -> Case:
         """
         The case type has to be published.
         """
@@ -67,10 +67,10 @@ class StatusResource(BaseResource["CasesClient"]):
     ) -> PaginatedResponseBody[Status]:
         return self._list_resources(PaginatedResponseBody[Status], params=params)
 
-    def retrieve(self, identifier: str | UUID) -> Status:
+    def retrieve(self, *, identifier: str | UUID) -> Status:
         return self._retrieve_resource(identifier, Status)
 
-    def create(self, data: StatusCreateData) -> Status:
+    def create(self, *, data: StatusCreateData) -> Status:
         return self._create_resource(data, Status)
 
 
@@ -82,12 +82,12 @@ class RoleResource(BaseResource["CasesClient"]):
     ) -> PaginatedResponseBody[Role]:
         return self._list_resources(PaginatedResponseBody[Role], params=params)
 
-    def retrieve(self, identifier: str | UUID) -> Role:
+    def retrieve(self, *, identifier: str | UUID) -> Role:
         response = self._get(self._detail_path(identifier))
         # betrokkeneType decides which Role class comes back
         return msgspec.convert(response.json(), type=Role)
 
-    def create(self, data: EmployeeRoleCreateData) -> Role:
+    def create(self, *, data: EmployeeRoleCreateData) -> Role:
         """
         Only employee roles for now.
         """
@@ -110,7 +110,7 @@ class CaseDocumentResource(BaseResource["CasesClient"]):
         """
         return self._list_resources(list[CaseDocument], params=params)
 
-    def create(self, data: CaseDocumentCreateData) -> CaseDocument:
+    def create(self, *, data: CaseDocumentCreateData) -> CaseDocument:
         """
         The case type has to allow the document's type.
         """

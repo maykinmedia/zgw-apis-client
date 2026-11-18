@@ -42,10 +42,10 @@ if TYPE_CHECKING:
 class CatalogueResource(BaseResource["CatalogiClient"]):
     base_path: ClassVar[str] = "catalogussen"
 
-    def retrieve(self, identifier: str | UUID) -> Catalogue:
+    def retrieve(self, *, identifier: str | UUID) -> Catalogue:
         return self._retrieve_resource(identifier, Catalogue)
 
-    def create(self, data: CatalogueCreateData) -> Catalogue:
+    def create(self, *, data: CatalogueCreateData) -> Catalogue:
         return self._create_resource(data, Catalogue)
 
 
@@ -60,16 +60,16 @@ class CaseTypeResource(BaseResource["CatalogiClient"]):
         """
         return self._list_resources(PaginatedResponseBody[CaseType], params=params)
 
-    def retrieve(self, identifier: str | UUID) -> CaseType:
+    def retrieve(self, *, identifier: str | UUID) -> CaseType:
         return self._retrieve_resource(identifier, CaseType)
 
-    def create(self, data: CaseTypeCreateData) -> CaseType:
+    def create(self, *, data: CaseTypeCreateData) -> CaseType:
         """
         New case types are concepts. Publish them before creating cases.
         """
         return self._create_resource(data, CaseType)
 
-    def publish(self, identifier: str | UUID) -> CaseType:
+    def publish(self, *, identifier: str | UUID) -> CaseType:
         """
         Open Zaak only publishes a case type with at least two status types, a result
         type, a role type, and published document types.
@@ -89,16 +89,16 @@ class DocumentTypeResource(BaseResource["CatalogiClient"]):
         """
         return self._list_resources(PaginatedResponseBody[DocumentType], params=params)
 
-    def retrieve(self, identifier: str | UUID) -> DocumentType:
+    def retrieve(self, *, identifier: str | UUID) -> DocumentType:
         return self._retrieve_resource(identifier, DocumentType)
 
-    def create(self, data: DocumentTypeCreateData) -> DocumentType:
+    def create(self, *, data: DocumentTypeCreateData) -> DocumentType:
         """
         New document types are concepts and must be published before the case type.
         """
         return self._create_resource(data, DocumentType)
 
-    def publish(self, identifier: str | UUID) -> DocumentType:
+    def publish(self, *, identifier: str | UUID) -> DocumentType:
         response = self._post(f"{self._detail_path(identifier)}/publish")
         return self.process_response(response, DocumentType)
 
@@ -110,7 +110,7 @@ class CaseTypeDocumentTypeResource(BaseResource["CatalogiClient"]):
 
     base_path: ClassVar[str] = "zaaktype-informatieobjecttypen"
 
-    def create(self, data: CaseTypeDocumentTypeCreateData) -> CaseTypeDocumentType:
+    def create(self, *, data: CaseTypeDocumentTypeCreateData) -> CaseTypeDocumentType:
         return self._create_resource(data, CaseTypeDocumentType)
 
 
@@ -122,10 +122,10 @@ class StatusTypeResource(BaseResource["CatalogiClient"]):
     ) -> PaginatedResponseBody[StatusType]:
         return self._list_resources(PaginatedResponseBody[StatusType], params=params)
 
-    def retrieve(self, identifier: str | UUID) -> StatusType:
+    def retrieve(self, *, identifier: str | UUID) -> StatusType:
         return self._retrieve_resource(identifier, StatusType)
 
-    def create(self, data: StatusTypeCreateData) -> StatusType:
+    def create(self, *, data: StatusTypeCreateData) -> StatusType:
         return self._create_resource(data, StatusType)
 
 
@@ -137,10 +137,10 @@ class ResultTypeResource(BaseResource["CatalogiClient"]):
     ) -> PaginatedResponseBody[ResultType]:
         return self._list_resources(PaginatedResponseBody[ResultType], params=params)
 
-    def retrieve(self, identifier: str | UUID) -> ResultType:
+    def retrieve(self, *, identifier: str | UUID) -> ResultType:
         return self._retrieve_resource(identifier, ResultType)
 
-    def create(self, data: ResultTypeCreateData) -> ResultType:
+    def create(self, *, data: ResultTypeCreateData) -> ResultType:
         """
         Open Zaak checks the Selectielijst URLs against the public Selectielijst API.
         """
@@ -155,8 +155,8 @@ class RoleTypeResource(BaseResource["CatalogiClient"]):
     ) -> PaginatedResponseBody[RoleType]:
         return self._list_resources(PaginatedResponseBody[RoleType], params=params)
 
-    def retrieve(self, identifier: str | UUID) -> RoleType:
+    def retrieve(self, *, identifier: str | UUID) -> RoleType:
         return self._retrieve_resource(identifier, RoleType)
 
-    def create(self, data: RoleTypeCreateData) -> RoleType:
+    def create(self, *, data: RoleTypeCreateData) -> RoleType:
         return self._create_resource(data, RoleType)

@@ -20,13 +20,13 @@ class DocumentResource(BaseResource["DocumentsClient"]):
     ) -> PaginatedResponseBody[Document]:
         return self._list_resources(PaginatedResponseBody[Document], params=params)
 
-    def retrieve(self, identifier: str | UUID) -> Document:
+    def retrieve(self, *, identifier: str | UUID) -> Document:
         """
         Returns the latest version.
         """
         return self._retrieve_resource(identifier, Document)
 
-    def create(self, data: DocumentCreateData) -> Document:
+    def create(self, *, data: DocumentCreateData) -> Document:
         """
         Pass the file content base64-encoded in ``inhoud``.
         """
