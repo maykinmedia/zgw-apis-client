@@ -4,7 +4,7 @@ Structs for the Zaken API.
 
 from collections.abc import Sequence
 from datetime import date, datetime
-from typing import Any, ClassVar, Literal
+from typing import ClassVar, Literal
 from uuid import UUID
 
 from msgspec import UNSET, UnsetType
@@ -134,7 +134,7 @@ class Case(BaseSchemaStruct):
     betalingsindicatie: Betalingsindicatie = ""
     betalingsindicatie_weergave: str
     laatste_betaaldatum: datetime | None = None
-    zaakgeometrie: dict[str, Any] | None = None
+    zaakgeometrie: dict[str, object] | None = None
     """
     GeoJSON geometry, not modelled further.
     """
@@ -242,19 +242,19 @@ class EmployeeRole(BaseRole, tag="medewerker"):
 
 
 class NaturalPersonRole(BaseRole, tag="natuurlijk_persoon"):
-    betrokkene_identificatie: dict[str, Any] | None = None
+    betrokkene_identificatie: dict[str, object] | None = None
 
 
 class NonNaturalPersonRole(BaseRole, tag="niet_natuurlijk_persoon"):
-    betrokkene_identificatie: dict[str, Any] | None = None
+    betrokkene_identificatie: dict[str, object] | None = None
 
 
 class BranchRole(BaseRole, tag="vestiging"):
-    betrokkene_identificatie: dict[str, Any] | None = None
+    betrokkene_identificatie: dict[str, object] | None = None
 
 
 class OrganisationalUnitRole(BaseRole, tag="organisatorische_eenheid"):
-    betrokkene_identificatie: dict[str, Any] | None = None
+    betrokkene_identificatie: dict[str, object] | None = None
 
 
 type Role = (
