@@ -3,7 +3,11 @@ Literals rather than Enums: a lot of fields also allow ``""``, and msgspec only 
 one str-like type in a union.
 """
 
-from typing import Literal
+from typing import Annotated, Literal
+
+import msgspec
+
+type URL = Annotated[str, msgspec.Meta(pattern=r"^https?://")]
 
 type Vertrouwelijkheidaanduiding = Literal[
     "openbaar",

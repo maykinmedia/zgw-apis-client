@@ -1,3 +1,6 @@
+from datetime import UTC, datetime
+from unittest.mock import patch
+
 import msgspec
 import pytest
 
@@ -9,6 +12,7 @@ from zgw_apis_client.structs.cases import (
     MedewerkerIdentificatie,
     NaturalPersonRole,
     Role,
+    StatusCreateData,
 )
 from zgw_apis_client.structs.catalogi import CaseTypeListParams
 
@@ -96,3 +100,50 @@ def test_detail_path_from_uuid_or_url():
 def test_resource_must_be_bound_to_a_client():
     with pytest.raises(RuntimeError):
         CasesClient.case.http_client  # noqa: B018
+
+
+@pytest.mark.parametrize(
+    "gezetdoor",
+    ["http://example.com/zaken/api/v1/rollen/1", "https://example.com/rollen/1", None],
+)
+def test_url_fields_accept_urls_and_none(gezetdoor):
+    data = {
+        "zaak": "http://example.com/zaken/api/v1/zaken/1",
+        "statustype": "http://example.com/catalogi/api/v1/statustypen/1",
+        "datumStatusGezet": "2026-02-01T09:00:00Z",
+        "gezetdoor": gezetdoor,
+    }
+
+    status = msgspec.convert(data, StatusCreateData)
+
+    assert status.gezetdoor == gezetdoor
+
+
+@pytest.mark.parametrize("value", ["", "1234", "example.com/zaken/1", "ftp://x"])
+def test_url_fields_reject_non_urls(value):
+    data = {
+        "zaak": value,
+        "statustype": "http://example.com/catalogi/api/v1/statustypen/1",
+        "datumStatusGezet": "2026-02-01T09:00:00Z",
+    }
+
+    with pytest.raises(msgspec.ValidationError, match=r"\$\.zaak"):
+        msgspec.convert(data, StatusCreateData)
+
+
+def test_create_validates_payload_before_sending():
+    client = CasesClient("http://example.com/zaken/api/v1/")
+    # the constructor doesn't validate, so this only fails in ``create``
+    data = StatusCreateData(
+        zaak="http://example.com/zaken/api/v1/zaken/1",
+        statustype="not-a-url",
+        datum_status_gezet=datetime(2026, 2, 1, 9, tzinfo=UTC),
+    )
+
+    with (
+        patch.object(CasesClient, "request") as mock_request,
+        pytest.raises(msgspec.ValidationError, match=r"\$\.statustype"),
+    ):
+        client.status.create(data)
+
+    mock_request.assert_not_called()

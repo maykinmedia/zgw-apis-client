@@ -114,9 +114,9 @@ class BaseResource[C: ZGWClient]:
         *,
         headers: Mapping | None = None,
     ) -> T:
-        response = self._post(
-            self.base_path, headers=headers, data=msgspec.to_builtins(data)
-        )
+        payload = msgspec.to_builtins(data)
+        msgspec.convert(payload, type(data))
+        response = self._post(self.base_path, headers=headers, data=payload)
         return self.process_response(response, struct_type)
 
     def _get(

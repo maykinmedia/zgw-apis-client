@@ -11,6 +11,7 @@ from msgspec import UNSET, UnsetType
 
 from .base import BaseSchemaStruct, PaginationParams
 from .common import (
+    URL,
     Archiefnominatie,
     RolOmschrijvingGeneriek,
     Vertrouwelijkheidaanduiding,
@@ -57,7 +58,7 @@ class Opschorting(BaseSchemaStruct):
 
 
 class RelevanteZaak(BaseSchemaStruct):
-    url: str
+    url: URL
     aard_relatie: AardRelatieZaak
     overige_relatie: str = ""
     toelichting: str = ""
@@ -87,7 +88,7 @@ class CaseListParams(PaginationParams):
 
 
 class CaseCreateData(BaseSchemaStruct):
-    zaaktype: str
+    zaaktype: URL
     bronorganisatie: str
     verantwoordelijke_organisatie: str
     startdatum: date
@@ -100,10 +101,10 @@ class CaseCreateData(BaseSchemaStruct):
     publicatiedatum: date | None | UnsetType = UNSET
     communicatiekanaal: str | UnsetType = UNSET
     communicatiekanaal_naam: str | UnsetType = UNSET
-    producten_of_diensten: Sequence[str] | UnsetType = UNSET
+    producten_of_diensten: Sequence[URL] | UnsetType = UNSET
     vertrouwelijkheidaanduiding: Vertrouwelijkheidaanduiding | UnsetType = UNSET
     betalingsindicatie: Betalingsindicatie | UnsetType = UNSET
-    hoofdzaak: str | None | UnsetType = UNSET
+    hoofdzaak: URL | None | UnsetType = UNSET
     relevante_andere_zaken: Sequence[RelevanteZaak] | UnsetType = UNSET
     kenmerken: Sequence[ZaakKenmerk] | UnsetType = UNSET
     opdrachtgevende_organisatie: str | UnsetType = UNSET
@@ -166,11 +167,11 @@ class StatusListParams(PaginationParams):
 
 
 class StatusCreateData(BaseSchemaStruct):
-    zaak: str
-    statustype: str
+    zaak: URL
+    statustype: URL
     datum_status_gezet: datetime
     statustoelichting: str | UnsetType = UNSET
-    gezetdoor: str | None | UnsetType = UNSET
+    gezetdoor: URL | None | UnsetType = UNSET
     """
     URL of the role that set the status.
     """
@@ -268,8 +269,8 @@ type Role = (
 class EmployeeRoleCreateData(
     BaseSchemaStruct, tag_field="betrokkeneType", tag="medewerker"
 ):
-    zaak: str
-    roltype: str
+    zaak: URL
+    roltype: URL
     roltoelichting: str | UnsetType = UNSET
     betrokkene_identificatie: MedewerkerIdentificatie | UnsetType = UNSET
     betrokkene: str | UnsetType = UNSET
@@ -288,15 +289,15 @@ class CaseDocumentListParams(BaseSchemaStruct):
 
 
 class CaseDocumentCreateData(BaseSchemaStruct):
-    zaak: str
-    informatieobject: str
+    zaak: URL
+    informatieobject: URL
     """
     URL of the document in the Documenten API.
     """
     titel: str | UnsetType = UNSET
     beschrijving: str | UnsetType = UNSET
     vernietigingsdatum: datetime | None | UnsetType = UNSET
-    status: str | None | UnsetType = UNSET
+    status: URL | None | UnsetType = UNSET
 
 
 class CaseDocument(BaseSchemaStruct):

@@ -9,7 +9,7 @@ from typing import Literal
 from msgspec import UNSET, UnsetType
 
 from .base import BaseSchemaStruct, PaginationParams
-from .common import Vertrouwelijkheidaanduiding
+from .common import URL, Vertrouwelijkheidaanduiding
 
 type DocumentStatus = Literal[
     "in_bewerking", "ter_vaststelling", "definitief", "gearchiveerd"
@@ -73,7 +73,7 @@ class DocumentCreateData(BaseSchemaStruct):
     """
     ISO 639-2/B language code, e.g. ``dut`` or ``eng``.
     """
-    informatieobjecttype: str
+    informatieobjecttype: URL
     inhoud: str | None | UnsetType = UNSET
     """
     The base64-encoded file content.

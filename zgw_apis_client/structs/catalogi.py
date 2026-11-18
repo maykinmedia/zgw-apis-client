@@ -13,6 +13,7 @@ from msgspec import UNSET, UnsetType
 
 from .base import BaseSchemaStruct, PaginationParams
 from .common import (
+    URL,
     Archiefnominatie,
     RolOmschrijvingGeneriek,
     Vertrouwelijkheidaanduiding,
@@ -125,7 +126,7 @@ class CaseTypeListParams(PaginationParams):
 
 
 class CaseTypeCreateData(BaseSchemaStruct):
-    catalogus: str
+    catalogus: URL
     omschrijving: str
     vertrouwelijkheidaanduiding: Vertrouwelijkheidaanduiding
     doel: str
@@ -142,7 +143,7 @@ class CaseTypeCreateData(BaseSchemaStruct):
     verantwoordelijke: str
     begin_geldigheid: date
     versiedatum: date
-    producten_of_diensten: Sequence[str] = msgspec.field(default_factory=list)
+    producten_of_diensten: Sequence[URL] = msgspec.field(default_factory=list)
     besluittypen: Sequence[str] = msgspec.field(default_factory=list)
     gerelateerde_zaaktypen: Sequence[ZaakTypenRelatie] = msgspec.field(
         default_factory=list
@@ -157,7 +158,7 @@ class CaseTypeCreateData(BaseSchemaStruct):
     verantwoordingsrelatie: Sequence[str] | UnsetType = UNSET
     selectielijst_procestype: str | UnsetType = UNSET
     einde_geldigheid: date | None | UnsetType = UNSET
-    deelzaaktypen: Sequence[str] | UnsetType = UNSET
+    deelzaaktypen: Sequence[URL] | UnsetType = UNSET
 
 
 class CaseType(BaseSchemaStruct):
@@ -215,7 +216,7 @@ class DocumentTypeListParams(PaginationParams):
 
 
 class DocumentTypeCreateData(BaseSchemaStruct):
-    catalogus: str
+    catalogus: URL
     omschrijving: str
     vertrouwelijkheidaanduiding: Vertrouwelijkheidaanduiding
     begin_geldigheid: date
@@ -243,11 +244,11 @@ class DocumentType(BaseSchemaStruct):
 
 
 class CaseTypeDocumentTypeCreateData(BaseSchemaStruct):
-    zaaktype: str
-    informatieobjecttype: str
+    zaaktype: URL
+    informatieobjecttype: URL
     volgnummer: int
     richting: Richting
-    statustype: str | None | UnsetType = UNSET
+    statustype: URL | None | UnsetType = UNSET
 
 
 class CaseTypeDocumentType(BaseSchemaStruct):
@@ -269,7 +270,7 @@ class StatusTypeListParams(PaginationParams):
 
 
 class StatusTypeCreateData(BaseSchemaStruct):
-    zaaktype: str
+    zaaktype: URL
     omschrijving: str
     volgnummer: int
     omschrijving_generiek: str | UnsetType = UNSET
@@ -312,13 +313,13 @@ class ResultTypeListParams(PaginationParams):
 
 
 class ResultTypeCreateData(BaseSchemaStruct):
-    zaaktype: str
+    zaaktype: URL
     omschrijving: str
-    resultaattypeomschrijving: str
+    resultaattypeomschrijving: URL
     """
     URL of the generic result type description in the Selectielijst API.
     """
-    selectielijstklasse: str
+    selectielijstklasse: URL
     """
     URL of the result in the Selectielijst API. It must belong to the
     ``selectielijst_procestype`` of the case type.
@@ -330,8 +331,8 @@ class ResultTypeCreateData(BaseSchemaStruct):
     procesobjectaard: str | UnsetType = UNSET
     indicatie_specifiek: bool | None | UnsetType = UNSET
     procestermijn: str | None | UnsetType = UNSET
-    besluittypen: Sequence[str] | UnsetType = UNSET
-    informatieobjecttypen: Sequence[str] | UnsetType = UNSET
+    besluittypen: Sequence[URL] | UnsetType = UNSET
+    informatieobjecttypen: Sequence[URL] | UnsetType = UNSET
     begin_geldigheid: date | None | UnsetType = UNSET
     einde_geldigheid: date | None | UnsetType = UNSET
 
@@ -372,7 +373,7 @@ class RoleTypeListParams(PaginationParams):
 
 
 class RoleTypeCreateData(BaseSchemaStruct):
-    zaaktype: str
+    zaaktype: URL
     omschrijving: str
     omschrijving_generiek: RolOmschrijvingGeneriek
     begin_geldigheid: date | None | UnsetType = UNSET
