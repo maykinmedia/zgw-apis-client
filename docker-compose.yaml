@@ -1,0 +1,86 @@
+# DISCLAIMER: THIS IS FOR DEVELOPMENT AND TESTING PURPOSES ONLY AND NOT SUITABLE FOR PRODUCTION.
+#
+# Used to record the test cassettes, see docs/testing.rst.
+
+x-openzaak-image: &openzaak-image
+  image: openzaak/open-zaak:${OPENZAAK_VERSION:-1.31.2}
+  # no arm64 image
+  platform: linux/amd64
+
+x-openzaak-env: &openzaak-env
+  DJANGO_SETTINGS_MODULE: openzaak.conf.docker
+  SECRET_KEY: insecure-open-zaak-test-secret-key
+  # not '*': Open Zaak would then treat the Selectielijst URLs as its own
+  ALLOWED_HOSTS: localhost,127.0.0.1
+  SITE_DOMAIN: localhost:8339
+  DB_NAME: openzaak
+  DB_USER: openzaak
+  DB_HOST: db
+  IS_HTTPS: 'no'
+  CACHE_DEFAULT: redis:6379/0
+  CACHE_AXES: redis:6379/0
+  OPENZAAK_SUPERUSER_USERNAME: admin
+  DJANGO_SUPERUSER_PASSWORD: admin
+  OPENZAAK_SUPERUSER_EMAIL: admin@localhost
+  DISABLE_2FA: 'yes'
+  CELERY_BROKER_URL: redis://redis:6379/1
+  CELERY_RESULT_BACKEND: redis://redis:6379/1
+  NOTIFICATIONS_DISABLED: 'true'
+  # so tokens in old cassettes never expire
+  JWT_EXPIRY: '99999999999'
+  JWT_LEEWAY: '99999999999'
+  OTEL_SDK_DISABLED: 'true'
+
+services:
+  redis:
+    image: redis:8
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  db:
+    image: postgis/postgis:${PG_VERSION:-17-3.5}
+    # no arm64 image
+    platform: linux/amd64
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    volumes:
+      - ./docker/open-zaak/docker-init-db/:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # migrates, loads setup_configuration/data.yaml and exits
+  init:
+    <<: *openzaak-image
+    environment:
+      <<: *openzaak-env
+      RUN_SETUP_CONFIG: 'true'
+    command: /setup_configuration.sh
+    volumes: &openzaak-volumes
+      - ./docker/open-zaak/setup_configuration:/app/setup_configuration:ro
+    depends_on: &openzaak-depends-on
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  web:
+    <<: *openzaak-image
+    environment: *openzaak-env
+    ports:
+      - 8339:8000
+    volumes: *openzaak-volumes
+    healthcheck:
+      test: ['CMD', 'maykin-common', 'health-check', '--endpoint=/_healthz/livez/']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    depends_on:
+      <<: *openzaak-depends-on
+      init:
+        condition: service_completed_successfully

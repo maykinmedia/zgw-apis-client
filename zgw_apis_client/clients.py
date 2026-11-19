@@ -3,13 +3,35 @@ from collections.abc import MutableMapping
 from ape_pie import APIClient
 from ape_pie.typing import ConfigAdapter
 
-# from .resources.cases import (
-#     CaseResource,
-#     RoleResource,
-# )
+from .resources.catalogi import (
+    CatalogusResource,
+    InformatieObjectTypeResource,
+    ResultaatTypeResource,
+    RolTypeResource,
+    StatusTypeResource,
+    ZaakTypeInformatieObjectTypeResource,
+    ZaakTypeResource,
+)
+from .resources.documenten import EnkelvoudigInformatieObjectResource
+from .resources.zaken import (
+    RolResource,
+    StatusResource,
+    ZaakInformatieObjectResource,
+    ZaakResource,
+)
 
 
 class ZGWClient(APIClient):
+    """
+    Base client for the ZGW APIs.
+
+    ``base_url`` is the API root, e.g. ``https://open-zaak.example.com/zaken/api/v1/``.
+
+    In a Django project, use :meth:`configure_from` with a zgw-consumers service, which
+    takes care of the (JWT) authentication. Alternatively, pass a ready-made token as
+    ``bearer_token``.
+    """
+
     def __init__(
         self,
         base_url: str,
@@ -37,10 +59,34 @@ class ZGWClient(APIClient):
         return cls(base_url, request_kwargs=session_kwargs, **kwargs)
 
 
-class CasesClient(ZGWClient):
+class CatalogiClient(ZGWClient):
+    """
+    Client class for the catalogue API ("Catalogi API").
+    """
+
+    catalogus = CatalogusResource()
+    zaaktype = ZaakTypeResource()
+    zaaktype_informatieobjecttype = ZaakTypeInformatieObjectTypeResource()
+    informatieobjecttype = InformatieObjectTypeResource()
+    statustype = StatusTypeResource()
+    resultaattype = ResultaatTypeResource()
+    roltype = RolTypeResource()
+
+
+class ZakenClient(ZGWClient):
     """
     Client class for the cases API ("Zaken API").
     """
 
-    # case = CaseResource()
-    # role = RoleResource()
+    zaak = ZaakResource()
+    status = StatusResource()
+    rol = RolResource()
+    zaakinformatieobject = ZaakInformatieObjectResource()
+
+
+class DocumentenClient(ZGWClient):
+    """
+    Client class for the documents API ("Documenten API").
+    """
+
+    enkelvoudiginformatieobject = EnkelvoudigInformatieObjectResource()

@@ -3,13 +3,15 @@ from __future__ import annotations
 import copy
 import logging
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, ClassVar, Self
+from uuid import UUID
 
 import msgspec
 import requests
 
 if TYPE_CHECKING:
     from ..clients import ZGWClient
+    from ..structs.base import QueryParams
 
 
 logger = logging.getLogger(__name__)
@@ -28,6 +30,8 @@ class BaseResource[C: ZGWClient]:
             def retrieve(self, ...) -> ...:
                 ...
     """
+
+    base_path: ClassVar[str] = ""
 
     _name: str = ""
     _http_client: C | None = None
@@ -76,13 +80,53 @@ class BaseResource[C: ZGWClient]:
         # for now: assume no errors :)
         return msgspec.convert(response_data, type=struct_type)
 
+    def _detail_path(self, identifier: str | UUID) -> str:
+        # Accept a full URL too, since that's what you get in e.g. ``zaak.zaaktype``.
+        # ape-pie checks that it's under the base URL.
+        identifier = str(identifier)
+        if identifier.startswith(("http://", "https://")):
+            return identifier
+        return f"{self.base_path}/{identifier}"
+
+    def _list_resources[T](
+        self,
+        struct_type: type[T],
+        *,
+        params: QueryParams | None = None,
+        headers: Mapping | None = None,
+    ) -> T:
+        response = self._get(self.base_path, headers=headers, params=params)
+        return self.process_response(response, struct_type)
+
+    def _retrieve_resource[T](
+        self,
+        identifier: str | UUID,
+        struct_type: type[T],
+        *,
+        headers: Mapping | None = None,
+    ) -> T:
+        response = self._get(self._detail_path(identifier), headers=headers)
+        return self.process_response(response, struct_type)
+
+    def _create_resource[T](
+        self,
+        data: msgspec.Struct,
+        struct_type: type[T],
+        *,
+        headers: Mapping | None = None,
+    ) -> T:
+        payload = msgspec.to_builtins(data)
+        msgspec.convert(payload, type(data))
+        response = self._post(self.base_path, headers=headers, data=payload)
+        return self.process_response(response, struct_type)
+
     def _get(
         self,
         path: str,
         headers: Mapping | None = None,
-        params: msgspec.Struct | None = None,
+        params: QueryParams | None = None,
     ) -> requests.Response:
-        query_params = msgspec.to_builtins(params)
+        query_params = params.as_params() if params is not None else None
         response = self.http_client.request(
             "get", path, headers=headers, params=query_params
         )
@@ -93,10 +137,10 @@ class BaseResource[C: ZGWClient]:
         self,
         path: str,
         headers: Mapping | None = None,
-        params: msgspec.Struct | None = None,
+        params: QueryParams | None = None,
         data: object = None,
     ) -> requests.Response:
-        query_params = msgspec.to_builtins(params)
+        query_params = params.as_params() if params is not None else None
         response = self.http_client.request(
             "post",
             path,
@@ -111,10 +155,10 @@ class BaseResource[C: ZGWClient]:
         self,
         path: str,
         headers: Mapping | None = None,
-        params: msgspec.Struct | None = None,
+        params: QueryParams | None = None,
         data: object = None,
     ) -> requests.Response:
-        query_params = msgspec.to_builtins(params)
+        query_params = params.as_params() if params is not None else None
         response = self.http_client.request(
             "put", path, headers=headers, json=data, params=query_params
         )
@@ -125,9 +169,9 @@ class BaseResource[C: ZGWClient]:
         self,
         path: str,
         headers: Mapping | None = None,
-        params: msgspec.Struct | None = None,
+        params: QueryParams | None = None,
     ) -> requests.Response:
-        query_params = msgspec.to_builtins(params)
+        query_params = params.as_params() if params is not None else None
         response = self.http_client.request(
             "delete",
             path,
@@ -141,10 +185,10 @@ class BaseResource[C: ZGWClient]:
         self,
         path: str,
         headers: Mapping | None = None,
-        params: msgspec.Struct | None = None,
+        params: QueryParams | None = None,
         data: object = None,
     ) -> requests.Response:
-        query_params = msgspec.to_builtins(params)
+        query_params = params.as_params() if params is not None else None
         response = self.http_client.request(
             "patch",
             path,
@@ -159,11 +203,11 @@ class BaseResource[C: ZGWClient]:
         self,
         path: str,
         headers: Mapping | None = None,
-        params: msgspec.Struct | None = None,
+        params: QueryParams | None = None,
     ) -> requests.Response:
-        query_params = msgspec.to_builtins(params)
+        query_params = params.as_params() if params is not None else None
         response = self.http_client.request(
-            "delete",
+            "options",
             path,
             headers=headers,
             params=query_params,

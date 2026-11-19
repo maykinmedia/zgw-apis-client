@@ -1,0 +1,17 @@
+# Loaded on start and after every database reset. Credentials only, tests create
+# their own data.
+
+vng_api_common_credentials_config_enable: true
+vng_api_common_credentials:
+  items:
+    - identifier: test-client-id
+      secret: test-secret-for-the-zgw-apis-client-tests
+
+vng_api_common_applicaties_config_enable: true
+vng_api_common_applicaties:
+  items:
+    - uuid: 9cd7cc1c-fc85-4ffa-a8ad-a07e2eb7f8b6
+      client_ids:
+        - test-client-id
+      label: zgw-apis-client tests
+      heeft_alle_autorisaties: true
