@@ -9,7 +9,7 @@ from uuid import UUID
 
 from msgspec import UNSET, UnsetType
 
-from .base import BaseSchemaStruct, PaginationParams
+from .base import BaseParams, BaseSchemaStruct, PaginationParams
 from .common import (
     URL,
     Archiefnominatie,
@@ -283,7 +283,7 @@ class EmployeeRoleCreateData(
     betrokkene_type: ClassVar[BetrokkeneType] = "medewerker"
 
 
-class CaseDocumentListParams(BaseSchemaStruct):
+class CaseDocumentListParams(BaseParams):
     zaak: str | UnsetType = UNSET
     informatieobject: str | UnsetType = UNSET
 

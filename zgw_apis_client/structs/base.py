@@ -1,6 +1,7 @@
 from collections.abc import Sequence
-from typing import dataclass_transform
+from typing import Protocol, dataclass_transform
 
+import msgspec
 from msgspec import UNSET, Struct, StructMeta, UnsetType
 
 
@@ -45,7 +46,16 @@ class BaseSchemaStruct(Struct, metaclass=SchemaStructMeta):
     """
 
 
-class PaginationParams(BaseSchemaStruct):
+class QueryParams(Protocol):
+    def as_params(self) -> dict[str, object]: ...
+
+
+class BaseParams(BaseSchemaStruct):
+    def as_params(self) -> dict[str, object]:
+        return msgspec.to_builtins(self)
+
+
+class PaginationParams(BaseParams):
     page: int | UnsetType = UNSET
     page_size: int | UnsetType = UNSET
 

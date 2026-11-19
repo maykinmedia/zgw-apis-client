@@ -39,7 +39,7 @@ def test_query_params_keep_double_underscore_lookups():
         einddatum__isnull=True,
     )
 
-    assert msgspec.to_builtins(params) == {
+    assert params.as_params() == {
         "pageSize": 10,
         "einddatum__isnull": True,
         "rol__betrokkeneIdentificatie__medewerker__identificatie": "employee-1",
@@ -47,7 +47,7 @@ def test_query_params_keep_double_underscore_lookups():
 
 
 def test_unset_query_params_are_left_out():
-    assert msgspec.to_builtins(CaseTypeListParams()) == {}
+    assert CaseTypeListParams().as_params() == {}
 
 
 def test_roles_other_than_employees_are_accepted():
