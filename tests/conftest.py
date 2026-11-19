@@ -1,6 +1,6 @@
 import pytest
 
-from zgw_apis_client import CasesClient, CatalogiClient, DocumentsClient
+from zgw_apis_client import CatalogiClient, DocumentenClient, ZakenClient
 
 from .helpers import (
     CATALOGI_API_ROOT,
@@ -77,12 +77,12 @@ def catalogi_client():
 
 
 @pytest.fixture
-def cases_client():
-    with CasesClient(ZAKEN_API_ROOT, bearer_token=generate_jwt()) as client:
+def zaken_client():
+    with ZakenClient(ZAKEN_API_ROOT, bearer_token=generate_jwt()) as client:
         yield client
 
 
 @pytest.fixture
-def documents_client():
-    with DocumentsClient(DOCUMENTEN_API_ROOT, bearer_token=generate_jwt()) as client:
+def documenten_client():
+    with DocumentenClient(DOCUMENTEN_API_ROOT, bearer_token=generate_jwt()) as client:
         yield client

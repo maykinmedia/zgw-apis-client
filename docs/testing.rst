@@ -48,6 +48,6 @@ claims zgw-consumers uses:
 .. code-block:: python
 
     from tests.helpers import ZAKEN_API_ROOT, generate_jwt
-    from zgw_apis_client import CasesClient
+    from zgw_apis_client import ZakenClient
 
-    client = CasesClient(ZAKEN_API_ROOT, bearer_token=generate_jwt())
+    client = ZakenClient(ZAKEN_API_ROOT, bearer_token=generate_jwt())

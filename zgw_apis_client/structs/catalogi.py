@@ -91,7 +91,7 @@ class BrondatumArchiefprocedure(BaseSchemaStruct):
     procestermijn: str | None = None  # ISO 8601 duration
 
 
-class CatalogueCreateData(BaseSchemaStruct):
+class CatalogusCreateData(BaseSchemaStruct):
     domein: str
     rsin: str
     contactpersoon_beheer_naam: str
@@ -102,7 +102,7 @@ class CatalogueCreateData(BaseSchemaStruct):
     begindatum_versie: date | None | UnsetType = UNSET
 
 
-class Catalogue(BaseSchemaStruct):
+class Catalogus(BaseSchemaStruct):
     url: str
     domein: str
     rsin: str
@@ -117,7 +117,7 @@ class Catalogue(BaseSchemaStruct):
     begindatum_versie: date | None = None
 
 
-class CaseTypeListParams(PaginationParams):
+class ZaakTypeListParams(PaginationParams):
     catalogus: str | UnsetType = UNSET
     datum_geldigheid: date | UnsetType = UNSET
     identificatie: str | UnsetType = UNSET
@@ -125,7 +125,7 @@ class CaseTypeListParams(PaginationParams):
     trefwoorden: str | UnsetType = UNSET
 
 
-class CaseTypeCreateData(BaseSchemaStruct):
+class ZaakTypeCreateData(BaseSchemaStruct):
     catalogus: URL
     omschrijving: str
     vertrouwelijkheidaanduiding: Vertrouwelijkheidaanduiding
@@ -161,7 +161,7 @@ class CaseTypeCreateData(BaseSchemaStruct):
     deelzaaktypen: Sequence[URL] | UnsetType = UNSET
 
 
-class CaseType(BaseSchemaStruct):
+class ZaakType(BaseSchemaStruct):
     url: str
     identificatie: str = ""
     omschrijving: str
@@ -207,7 +207,7 @@ class CaseType(BaseSchemaStruct):
     zaakobjecttypen: Sequence[str]
 
 
-class DocumentTypeListParams(PaginationParams):
+class InformatieObjectTypeListParams(PaginationParams):
     catalogus: str | UnsetType = UNSET
     datum_geldigheid: date | UnsetType = UNSET
     omschrijving: str | UnsetType = UNSET
@@ -215,7 +215,7 @@ class DocumentTypeListParams(PaginationParams):
     zaaktype: str | UnsetType = UNSET
 
 
-class DocumentTypeCreateData(BaseSchemaStruct):
+class InformatieObjectTypeCreateData(BaseSchemaStruct):
     catalogus: URL
     omschrijving: str
     vertrouwelijkheidaanduiding: Vertrouwelijkheidaanduiding
@@ -226,7 +226,7 @@ class DocumentTypeCreateData(BaseSchemaStruct):
     omschrijving_generiek: InformatieObjectTypeOmschrijvingGeneriek | UnsetType = UNSET
 
 
-class DocumentType(BaseSchemaStruct):
+class InformatieObjectType(BaseSchemaStruct):
     url: str
     catalogus: str
     omschrijving: str
@@ -243,7 +243,7 @@ class DocumentType(BaseSchemaStruct):
     einde_object: date | None
 
 
-class CaseTypeDocumentTypeCreateData(BaseSchemaStruct):
+class ZaakTypeInformatieObjectTypeCreateData(BaseSchemaStruct):
     zaaktype: URL
     informatieobjecttype: URL
     volgnummer: int
@@ -251,7 +251,7 @@ class CaseTypeDocumentTypeCreateData(BaseSchemaStruct):
     statustype: URL | None | UnsetType = UNSET
 
 
-class CaseTypeDocumentType(BaseSchemaStruct):
+class ZaakTypeInformatieObjectType(BaseSchemaStruct):
     url: str
     zaaktype: str
     zaaktype_identificatie: str
@@ -305,14 +305,14 @@ class StatusType(BaseSchemaStruct):
     einde_object: date | None
 
 
-class ResultTypeListParams(PaginationParams):
+class ResultaatTypeListParams(PaginationParams):
     datum_geldigheid: date | UnsetType = UNSET
     status: ConceptStatus | UnsetType = UNSET
     zaaktype: str | UnsetType = UNSET
     zaaktype_identificatie: str | UnsetType = UNSET
 
 
-class ResultTypeCreateData(BaseSchemaStruct):
+class ResultaatTypeCreateData(BaseSchemaStruct):
     zaaktype: URL
     omschrijving: str
     resultaattypeomschrijving: URL
@@ -337,7 +337,7 @@ class ResultTypeCreateData(BaseSchemaStruct):
     einde_geldigheid: date | None | UnsetType = UNSET
 
 
-class ResultType(BaseSchemaStruct):
+class ResultaatType(BaseSchemaStruct):
     url: str
     zaaktype: str
     zaaktype_identificatie: str
@@ -363,7 +363,7 @@ class ResultType(BaseSchemaStruct):
     einde_object: date | None
 
 
-class RoleTypeListParams(PaginationParams):
+class RolTypeListParams(PaginationParams):
     datum_geldigheid: date | UnsetType = UNSET
     omschrijving: str | UnsetType = UNSET
     omschrijving_generiek: RolOmschrijvingGeneriek | UnsetType = UNSET
@@ -372,7 +372,7 @@ class RoleTypeListParams(PaginationParams):
     zaaktype_identificatie: str | UnsetType = UNSET
 
 
-class RoleTypeCreateData(BaseSchemaStruct):
+class RolTypeCreateData(BaseSchemaStruct):
     zaaktype: URL
     omschrijving: str
     omschrijving_generiek: RolOmschrijvingGeneriek
@@ -380,7 +380,7 @@ class RoleTypeCreateData(BaseSchemaStruct):
     einde_geldigheid: date | None | UnsetType = UNSET
 
 
-class RoleType(BaseSchemaStruct):
+class RolType(BaseSchemaStruct):
     url: str
     zaaktype: str
     zaaktype_identificatie: str

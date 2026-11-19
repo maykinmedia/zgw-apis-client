@@ -1,8 +1,8 @@
-from .clients import CasesClient, CatalogiClient, DocumentsClient, ZGWClient
+from .clients import CatalogiClient, DocumentenClient, ZakenClient, ZGWClient
 
 __all__ = [
-    "CasesClient",
     "CatalogiClient",
-    "DocumentsClient",
+    "DocumentenClient",
     "ZGWClient",
+    "ZakenClient",
 ]

@@ -4,17 +4,17 @@ from unittest.mock import patch
 import msgspec
 import pytest
 
-from zgw_apis_client import CasesClient
+from zgw_apis_client import ZakenClient
 from zgw_apis_client.structs.base import PaginatedResponseBody
-from zgw_apis_client.structs.cases import (
-    CaseListParams,
-    NaturalPersonRole,
-    Role,
+from zgw_apis_client.structs.catalogi import ZaakTypeListParams
+from zgw_apis_client.structs.zaken import (
+    NatuurlijkPersoonRol,
+    Rol,
     StatusCreateData,
+    ZaakListParams,
 )
-from zgw_apis_client.structs.catalogi import CaseTypeListParams
 
-ROLE = {
+ROL = {
     "url": "http://example.com/zaken/api/v1/rollen/1",
     "uuid": "a4ef6bc4-1ea1-4a2d-8f8f-a6d4b2d5c1b9",
     "zaak": "http://example.com/zaken/api/v1/zaken/1",
@@ -33,7 +33,7 @@ ROLE = {
 
 
 def test_query_params_keep_double_underscore_lookups():
-    params = CaseListParams(
+    params = ZaakListParams(
         page_size=10,
         rol__betrokkene_identificatie__medewerker__identificatie="employee-1",
         einddatum__isnull=True,
@@ -47,44 +47,44 @@ def test_query_params_keep_double_underscore_lookups():
 
 
 def test_unset_query_params_are_left_out():
-    assert CaseTypeListParams().as_params() == {}
+    assert ZaakTypeListParams().as_params() == {}
 
 
-def test_roles_other_than_employees_are_accepted():
+def test_rollen_other_than_medewerkers_are_accepted():
     """
     Another system may have added the applicant to the case. Listing roles shouldn't
     break on that.
     """
     data = {
-        **ROLE,
+        **ROL,
         "betrokkeneType": "natuurlijk_persoon",
         "betrokkeneIdentificatie": {"inpBsn": "111222333"},
     }
 
     page = msgspec.convert(
         {"count": 1, "next": None, "previous": None, "results": [data]},
-        type=PaginatedResponseBody[Role],
+        type=PaginatedResponseBody[Rol],
     )
 
-    role = page.results[0]
-    assert isinstance(role, NaturalPersonRole)
-    assert role.betrokkene_type == "natuurlijk_persoon"
-    assert role.betrokkene_identificatie == {"inpBsn": "111222333"}
+    rol = page.results[0]
+    assert isinstance(rol, NatuurlijkPersoonRol)
+    assert rol.betrokkene_type == "natuurlijk_persoon"
+    assert rol.betrokkene_identificatie == {"inpBsn": "111222333"}
 
 
 def test_detail_path_from_uuid_or_url():
-    client = CasesClient("http://example.com/zaken/api/v1/")
+    client = ZakenClient("http://example.com/zaken/api/v1/")
 
-    assert client.case._detail_path("1234") == "zaken/1234"
+    assert client.zaak._detail_path("1234") == "zaken/1234"
     assert (
-        client.case._detail_path("http://example.com/zaken/api/v1/zaken/1234")
+        client.zaak._detail_path("http://example.com/zaken/api/v1/zaken/1234")
         == "http://example.com/zaken/api/v1/zaken/1234"
     )
 
 
 def test_resource_must_be_bound_to_a_client():
     with pytest.raises(RuntimeError):
-        CasesClient.case.http_client  # noqa: B018
+        ZakenClient.zaak.http_client  # noqa: B018
 
 
 @pytest.mark.parametrize(
@@ -117,7 +117,7 @@ def test_url_fields_reject_non_urls(value):
 
 
 def test_create_validates_payload_before_sending():
-    client = CasesClient("http://example.com/zaken/api/v1/")
+    client = ZakenClient("http://example.com/zaken/api/v1/")
     # the constructor doesn't validate, so this only fails in ``create``
     data = StatusCreateData(
         zaak="http://example.com/zaken/api/v1/zaken/1",
@@ -126,7 +126,7 @@ def test_create_validates_payload_before_sending():
     )
 
     with (
-        patch.object(CasesClient, "request") as mock_request,
+        patch.object(ZakenClient, "request") as mock_request,
         pytest.raises(msgspec.ValidationError, match=r"\$\.statustype"),
     ):
         client.status.create(data=data)

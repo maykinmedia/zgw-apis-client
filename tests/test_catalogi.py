@@ -2,129 +2,133 @@ import pytest
 
 from zgw_apis_client import CatalogiClient
 from zgw_apis_client.structs.catalogi import (
-    CaseTypeListParams,
-    CatalogueCreateData,
-    DocumentTypeListParams,
-    ResultTypeListParams,
-    RoleTypeListParams,
+    CatalogusCreateData,
+    InformatieObjectTypeListParams,
+    ResultaatTypeListParams,
+    RolTypeListParams,
     StatusTypeListParams,
+    ZaakTypeListParams,
 )
 
 from .data import (
     RSIN,
     VALID_FROM,
-    create_catalogue,
-    create_concept_case_type,
-    create_document_type,
-    create_published_case_type,
+    create_catalogus,
+    create_concept_zaaktype,
+    create_informatieobjecttype,
+    create_published_zaaktype,
 )
 
 
 @pytest.mark.vcr
-def test_create_and_publish_case_type(catalogi_client: CatalogiClient):
-    setup = create_published_case_type(catalogi_client)
+def test_create_and_publish_zaaktype(catalogi_client: CatalogiClient):
+    setup = create_published_zaaktype(catalogi_client)
 
-    case_type = setup.case_type
-    assert not case_type.concept
-    assert case_type.identificatie == "TEST-CASE-TYPE"
-    assert case_type.begin_geldigheid == VALID_FROM
-    assert set(case_type.statustypen) == {st.url for st in setup.status_types}
-    assert case_type.resultaattypen == [setup.result_type.url]
-    assert case_type.roltypen == [setup.role_type.url]
-    assert case_type.informatieobjecttypen == [setup.document_type.url]
+    zaaktype = setup.zaaktype
+    assert not zaaktype.concept
+    assert zaaktype.identificatie == "TEST-CASE-TYPE"
+    assert zaaktype.begin_geldigheid == VALID_FROM
+    assert set(zaaktype.statustypen) == {st.url for st in setup.statustypen}
+    assert zaaktype.resultaattypen == [setup.resultaattype.url]
+    assert zaaktype.roltypen == [setup.roltype.url]
+    assert zaaktype.informatieobjecttypen == [setup.informatieobjecttype.url]
 
 
 @pytest.mark.vcr
-def test_list_case_types(catalogi_client: CatalogiClient):
-    catalogue = create_catalogue(catalogi_client)
-    concept = create_concept_case_type(
-        catalogi_client, catalogue, identificatie="CONCEPT"
+def test_list_zaaktypen(catalogi_client: CatalogiClient):
+    catalogus = create_catalogus(catalogi_client)
+    concept = create_concept_zaaktype(
+        catalogi_client, catalogus, identificatie="CONCEPT"
     )
-    published = create_published_case_type(catalogi_client, catalogue).case_type
+    published = create_published_zaaktype(catalogi_client, catalogus).zaaktype
 
     # concepts are hidden by default
-    page = catalogi_client.case_type.list()
+    page = catalogi_client.zaaktype.list()
     assert page.count == 1
     assert page.results[0].url == published.url
 
-    page = catalogi_client.case_type.list(params=CaseTypeListParams(status="concept"))
-    assert [case_type.url for case_type in page.results] == [concept.url]
+    page = catalogi_client.zaaktype.list(params=ZaakTypeListParams(status="concept"))
+    assert [zaaktype.url for zaaktype in page.results] == [concept.url]
 
 
 @pytest.mark.vcr
-def test_list_case_types_filtered_by_catalogue(catalogi_client: CatalogiClient):
-    published = create_published_case_type(catalogi_client).case_type
-    other_catalogue = catalogi_client.catalogue.create(
-        data=CatalogueCreateData(
+def test_list_zaaktypen_filtered_by_catalogus(catalogi_client: CatalogiClient):
+    published = create_published_zaaktype(catalogi_client).zaaktype
+    other_catalogus = catalogi_client.catalogus.create(
+        data=CatalogusCreateData(
             domein="OTHER", rsin=RSIN, contactpersoon_beheer_naam="Other"
         )
     )
 
-    page = catalogi_client.case_type.list(
-        params=CaseTypeListParams(catalogus=published.catalogus)
+    page = catalogi_client.zaaktype.list(
+        params=ZaakTypeListParams(catalogus=published.catalogus)
     )
     assert page.count == 1
 
-    page = catalogi_client.case_type.list(
-        params=CaseTypeListParams(catalogus=other_catalogue.url)
+    page = catalogi_client.zaaktype.list(
+        params=ZaakTypeListParams(catalogus=other_catalogus.url)
     )
     assert page.count == 0
 
 
 @pytest.mark.vcr
-def test_retrieve_case_type_by_uuid_and_url(catalogi_client: CatalogiClient):
-    case_type = create_published_case_type(catalogi_client).case_type
-    uuid = case_type.url.rsplit("/", 1)[-1]
+def test_retrieve_zaaktype_by_uuid_and_url(catalogi_client: CatalogiClient):
+    zaaktype = create_published_zaaktype(catalogi_client).zaaktype
+    uuid = zaaktype.url.rsplit("/", 1)[-1]
 
-    by_url = catalogi_client.case_type.retrieve(identifier=case_type.url)
-    by_uuid = catalogi_client.case_type.retrieve(identifier=uuid)
+    by_url = catalogi_client.zaaktype.retrieve(identifier=zaaktype.url)
+    by_uuid = catalogi_client.zaaktype.retrieve(identifier=uuid)
 
-    assert by_url == by_uuid == case_type
+    assert by_url == by_uuid == zaaktype
 
 
 @pytest.mark.vcr
-def test_retrieve_and_list_document_types(catalogi_client: CatalogiClient):
-    catalogue = create_catalogue(catalogi_client)
-    published = create_document_type(catalogi_client, catalogue, omschrijving="Letter")
-    concept = create_document_type(
-        catalogi_client, catalogue, omschrijving="Draft", publish=False
+def test_retrieve_and_list_informatieobjecttypen(catalogi_client: CatalogiClient):
+    catalogus = create_catalogus(catalogi_client)
+    published = create_informatieobjecttype(
+        catalogi_client, catalogus, omschrijving="Letter"
+    )
+    concept = create_informatieobjecttype(
+        catalogi_client, catalogus, omschrijving="Draft", publish=False
     )
 
-    retrieved = catalogi_client.document_type.retrieve(identifier=published.url)
+    retrieved = catalogi_client.informatieobjecttype.retrieve(identifier=published.url)
     assert retrieved.omschrijving == "Letter"
     assert not retrieved.concept
 
-    page = catalogi_client.document_type.list()
-    assert [document_type.url for document_type in page.results] == [published.url]
+    page = catalogi_client.informatieobjecttype.list()
+    assert [informatieobjecttype.url for informatieobjecttype in page.results] == [
+        published.url
+    ]
 
-    page = catalogi_client.document_type.list(
-        params=DocumentTypeListParams(status="alles")
+    page = catalogi_client.informatieobjecttype.list(
+        params=InformatieObjectTypeListParams(status="alles")
     )
-    assert {document_type.url for document_type in page.results} == {
+    assert {informatieobjecttype.url for informatieobjecttype in page.results} == {
         published.url,
         concept.url,
     }
 
 
 @pytest.mark.vcr
-def test_retrieve_and_list_status_types(catalogi_client: CatalogiClient):
-    setup = create_published_case_type(catalogi_client)
-    received, in_progress, closed = setup.status_types
+def test_retrieve_and_list_statustypen(catalogi_client: CatalogiClient):
+    setup = create_published_zaaktype(catalogi_client)
+    received, in_progress, closed = setup.statustypen
 
-    retrieved = catalogi_client.status_type.retrieve(identifier=closed.url)
+    retrieved = catalogi_client.statustype.retrieve(identifier=closed.url)
     assert retrieved.omschrijving == "Closed"
     assert retrieved.volgnummer == 3
     assert retrieved.is_eindstatus
-    assert not catalogi_client.status_type.retrieve(
+    assert not catalogi_client.statustype.retrieve(
         identifier=received.url
     ).is_eindstatus
-    assert retrieved.zaaktype == setup.case_type.url
+    assert retrieved.zaaktype == setup.zaaktype.url
 
-    page = catalogi_client.status_type.list(
-        params=StatusTypeListParams(zaaktype=setup.case_type.url)
+    page = catalogi_client.statustype.list(
+        params=StatusTypeListParams(zaaktype=setup.zaaktype.url)
     )
     assert page.count == 3
-    assert {status_type.url for status_type in page.results} == {
+    assert {statustype.url for statustype in page.results} == {
         received.url,
         in_progress.url,
         closed.url,
@@ -132,37 +136,41 @@ def test_retrieve_and_list_status_types(catalogi_client: CatalogiClient):
 
 
 @pytest.mark.vcr
-def test_retrieve_and_list_result_types(catalogi_client: CatalogiClient):
-    setup = create_published_case_type(catalogi_client)
+def test_retrieve_and_list_resultaattypen(catalogi_client: CatalogiClient):
+    setup = create_published_zaaktype(catalogi_client)
 
-    retrieved = catalogi_client.result_type.retrieve(identifier=setup.result_type.url)
+    retrieved = catalogi_client.resultaattype.retrieve(
+        identifier=setup.resultaattype.url
+    )
     assert retrieved.omschrijving == "Handled"
     assert retrieved.archiefnominatie == "vernietigen"
     assert retrieved.brondatum_archiefprocedure is not None
     assert retrieved.brondatum_archiefprocedure.afleidingswijze == "afgehandeld"
 
-    page = catalogi_client.result_type.list(
-        params=ResultTypeListParams(zaaktype=setup.case_type.url)
+    page = catalogi_client.resultaattype.list(
+        params=ResultaatTypeListParams(zaaktype=setup.zaaktype.url)
     )
-    assert [result_type.url for result_type in page.results] == [setup.result_type.url]
+    assert [resultaattype.url for resultaattype in page.results] == [
+        setup.resultaattype.url
+    ]
 
 
 @pytest.mark.vcr
-def test_retrieve_and_list_role_types(catalogi_client: CatalogiClient):
-    setup = create_published_case_type(catalogi_client)
+def test_retrieve_and_list_roltypen(catalogi_client: CatalogiClient):
+    setup = create_published_zaaktype(catalogi_client)
 
-    retrieved = catalogi_client.role_type.retrieve(identifier=setup.role_type.url)
+    retrieved = catalogi_client.roltype.retrieve(identifier=setup.roltype.url)
     assert retrieved.omschrijving == "Case handler"
     assert retrieved.omschrijving_generiek == "behandelaar"
 
-    page = catalogi_client.role_type.list(
-        params=RoleTypeListParams(
-            zaaktype=setup.case_type.url, omschrijving_generiek="behandelaar"
+    page = catalogi_client.roltype.list(
+        params=RolTypeListParams(
+            zaaktype=setup.zaaktype.url, omschrijving_generiek="behandelaar"
         )
     )
-    assert [role_type.url for role_type in page.results] == [setup.role_type.url]
+    assert [roltype.url for roltype in page.results] == [setup.roltype.url]
 
-    page = catalogi_client.role_type.list(
-        params=RoleTypeListParams(omschrijving_generiek="initiator")
+    page = catalogi_client.roltype.list(
+        params=RolTypeListParams(omschrijving_generiek="initiator")
     )
     assert page.count == 0

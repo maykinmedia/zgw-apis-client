@@ -10,20 +10,20 @@ from datetime import date
 from zgw_apis_client import CatalogiClient
 from zgw_apis_client.structs.catalogi import (
     BrondatumArchiefprocedure,
-    CaseType,
-    CaseTypeCreateData,
-    CaseTypeDocumentTypeCreateData,
-    Catalogue,
-    CatalogueCreateData,
-    DocumentType,
-    DocumentTypeCreateData,
+    Catalogus,
+    CatalogusCreateData,
+    InformatieObjectType,
+    InformatieObjectTypeCreateData,
     ReferentieProces,
-    ResultType,
-    ResultTypeCreateData,
-    RoleType,
-    RoleTypeCreateData,
+    ResultaatType,
+    ResultaatTypeCreateData,
+    RolType,
+    RolTypeCreateData,
     StatusType,
     StatusTypeCreateData,
+    ZaakType,
+    ZaakTypeCreateData,
+    ZaakTypeInformatieObjectTypeCreateData,
 )
 
 RSIN = "517439943"
@@ -41,9 +41,9 @@ RESULTAATTYPEOMSCHRIJVING_AFGEHANDELD = (
 )
 
 
-def create_catalogue(client: CatalogiClient) -> Catalogue:
-    return client.catalogue.create(
-        data=CatalogueCreateData(
+def create_catalogus(client: CatalogiClient) -> Catalogus:
+    return client.catalogus.create(
+        data=CatalogusCreateData(
             domein="TEST",
             rsin=RSIN,
             contactpersoon_beheer_naam="Test",
@@ -52,16 +52,16 @@ def create_catalogue(client: CatalogiClient) -> Catalogue:
     )
 
 
-def create_document_type(
+def create_informatieobjecttype(
     client: CatalogiClient,
-    catalogue: Catalogue,
+    catalogus: Catalogus,
     *,
     omschrijving: str = "Attachment",
     publish: bool = True,
-) -> DocumentType:
-    document_type = client.document_type.create(
-        data=DocumentTypeCreateData(
-            catalogus=catalogue.url,
+) -> InformatieObjectType:
+    informatieobjecttype = client.informatieobjecttype.create(
+        data=InformatieObjectTypeCreateData(
+            catalogus=catalogus.url,
             omschrijving=omschrijving,
             vertrouwelijkheidaanduiding="openbaar",
             begin_geldigheid=VALID_FROM,
@@ -69,20 +69,22 @@ def create_document_type(
         )
     )
     if publish:
-        document_type = client.document_type.publish(identifier=document_type.url)
-    return document_type
+        informatieobjecttype = client.informatieobjecttype.publish(
+            identifier=informatieobjecttype.url
+        )
+    return informatieobjecttype
 
 
-def create_concept_case_type(
+def create_concept_zaaktype(
     client: CatalogiClient,
-    catalogue: Catalogue,
+    catalogus: Catalogus,
     *,
     identificatie: str = "TEST-CASE-TYPE",
     omschrijving: str = "Test case type",
-) -> CaseType:
-    return client.case_type.create(
-        data=CaseTypeCreateData(
-            catalogus=catalogue.url,
+) -> ZaakType:
+    return client.zaaktype.create(
+        data=ZaakTypeCreateData(
+            catalogus=catalogus.url,
             identificatie=identificatie,
             omschrijving=omschrijving,
             vertrouwelijkheidaanduiding="openbaar",
@@ -106,54 +108,54 @@ def create_concept_case_type(
 
 
 @dataclass
-class PublishedCaseType:
-    case_type: CaseType
-    status_types: tuple[StatusType, StatusType, StatusType]
-    result_type: ResultType
-    role_type: RoleType
-    document_type: DocumentType
+class PublishedZaakType:
+    zaaktype: ZaakType
+    statustypen: tuple[StatusType, StatusType, StatusType]
+    resultaattype: ResultaatType
+    roltype: RolType
+    informatieobjecttype: InformatieObjectType
 
 
-def create_published_case_type(
-    client: CatalogiClient, catalogue: Catalogue | None = None
-) -> PublishedCaseType:
+def create_published_zaaktype(
+    client: CatalogiClient, catalogus: Catalogus | None = None
+) -> PublishedZaakType:
     """
     A published case type with everything Open Zaak wants before publishing.
     """
-    if catalogue is None:
-        catalogue = create_catalogue(client)
-    document_type = create_document_type(client, catalogue)
-    case_type = create_concept_case_type(client, catalogue)
+    if catalogus is None:
+        catalogus = create_catalogus(client)
+    informatieobjecttype = create_informatieobjecttype(client, catalogus)
+    zaaktype = create_concept_zaaktype(client, catalogus)
 
-    client.case_type_document_type.create(
-        data=CaseTypeDocumentTypeCreateData(
-            zaaktype=case_type.url,
-            informatieobjecttype=document_type.url,
+    client.zaaktype_informatieobjecttype.create(
+        data=ZaakTypeInformatieObjectTypeCreateData(
+            zaaktype=zaaktype.url,
+            informatieobjecttype=informatieobjecttype.url,
             volgnummer=1,
             richting="inkomend",
         )
     )
-    status_types = (
-        client.status_type.create(
+    statustypen = (
+        client.statustype.create(
             data=StatusTypeCreateData(
-                zaaktype=case_type.url, omschrijving="Received", volgnummer=1
+                zaaktype=zaaktype.url, omschrijving="Received", volgnummer=1
             )
         ),
-        client.status_type.create(
+        client.statustype.create(
             data=StatusTypeCreateData(
-                zaaktype=case_type.url, omschrijving="In progress", volgnummer=2
+                zaaktype=zaaktype.url, omschrijving="In progress", volgnummer=2
             )
         ),
         # final status: Open Zaak only accepts it once the case has a result
-        client.status_type.create(
+        client.statustype.create(
             data=StatusTypeCreateData(
-                zaaktype=case_type.url, omschrijving="Closed", volgnummer=3
+                zaaktype=zaaktype.url, omschrijving="Closed", volgnummer=3
             )
         ),
     )
-    result_type = client.result_type.create(
-        data=ResultTypeCreateData(
-            zaaktype=case_type.url,
+    resultaattype = client.resultaattype.create(
+        data=ResultaatTypeCreateData(
+            zaaktype=zaaktype.url,
             omschrijving="Handled",
             resultaattypeomschrijving=RESULTAATTYPEOMSCHRIJVING_AFGEHANDELD,
             selectielijstklasse=SELECTIELIJST_RESULTAAT,
@@ -164,19 +166,19 @@ def create_published_case_type(
             ),
         )
     )
-    role_type = client.role_type.create(
-        data=RoleTypeCreateData(
-            zaaktype=case_type.url,
+    roltype = client.roltype.create(
+        data=RolTypeCreateData(
+            zaaktype=zaaktype.url,
             omschrijving="Case handler",
             omschrijving_generiek="behandelaar",
         )
     )
-    case_type = client.case_type.publish(identifier=case_type.url)
+    zaaktype = client.zaaktype.publish(identifier=zaaktype.url)
 
-    return PublishedCaseType(
-        case_type=case_type,
-        status_types=status_types,
-        result_type=result_type,
-        role_type=role_type,
-        document_type=document_type,
+    return PublishedZaakType(
+        zaaktype=zaaktype,
+        statustypen=statustypen,
+        resultaattype=resultaattype,
+        roltype=roltype,
+        informatieobjecttype=informatieobjecttype,
     )

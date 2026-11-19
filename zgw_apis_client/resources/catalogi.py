@@ -12,25 +12,25 @@ from uuid import UUID
 
 from ..structs.base import PaginatedResponseBody
 from ..structs.catalogi import (
-    CaseType,
-    CaseTypeCreateData,
-    CaseTypeDocumentType,
-    CaseTypeDocumentTypeCreateData,
-    CaseTypeListParams,
-    Catalogue,
-    CatalogueCreateData,
-    DocumentType,
-    DocumentTypeCreateData,
-    DocumentTypeListParams,
-    ResultType,
-    ResultTypeCreateData,
-    ResultTypeListParams,
-    RoleType,
-    RoleTypeCreateData,
-    RoleTypeListParams,
+    Catalogus,
+    CatalogusCreateData,
+    InformatieObjectType,
+    InformatieObjectTypeCreateData,
+    InformatieObjectTypeListParams,
+    ResultaatType,
+    ResultaatTypeCreateData,
+    ResultaatTypeListParams,
+    RolType,
+    RolTypeCreateData,
+    RolTypeListParams,
     StatusType,
     StatusTypeCreateData,
     StatusTypeListParams,
+    ZaakType,
+    ZaakTypeCreateData,
+    ZaakTypeInformatieObjectType,
+    ZaakTypeInformatieObjectTypeCreateData,
+    ZaakTypeListParams,
 )
 from .base import BaseResource
 
@@ -39,79 +39,83 @@ if TYPE_CHECKING:
     from ..clients import CatalogiClient  # noqa: F401
 
 
-class CatalogueResource(BaseResource["CatalogiClient"]):
+class CatalogusResource(BaseResource["CatalogiClient"]):
     base_path: ClassVar[str] = "catalogussen"
 
-    def retrieve(self, *, identifier: str | UUID) -> Catalogue:
-        return self._retrieve_resource(identifier, Catalogue)
+    def retrieve(self, *, identifier: str | UUID) -> Catalogus:
+        return self._retrieve_resource(identifier, Catalogus)
 
-    def create(self, *, data: CatalogueCreateData) -> Catalogue:
-        return self._create_resource(data, Catalogue)
+    def create(self, *, data: CatalogusCreateData) -> Catalogus:
+        return self._create_resource(data, Catalogus)
 
 
-class CaseTypeResource(BaseResource["CatalogiClient"]):
+class ZaakTypeResource(BaseResource["CatalogiClient"]):
     base_path: ClassVar[str] = "zaaktypen"
 
     def list(
-        self, *, params: CaseTypeListParams | None = None
-    ) -> PaginatedResponseBody[CaseType]:
+        self, *, params: ZaakTypeListParams | None = None
+    ) -> PaginatedResponseBody[ZaakType]:
         """
         Concept case types are left out unless you filter on ``status``.
         """
-        return self._list_resources(PaginatedResponseBody[CaseType], params=params)
+        return self._list_resources(PaginatedResponseBody[ZaakType], params=params)
 
-    def retrieve(self, *, identifier: str | UUID) -> CaseType:
-        return self._retrieve_resource(identifier, CaseType)
+    def retrieve(self, *, identifier: str | UUID) -> ZaakType:
+        return self._retrieve_resource(identifier, ZaakType)
 
-    def create(self, *, data: CaseTypeCreateData) -> CaseType:
+    def create(self, *, data: ZaakTypeCreateData) -> ZaakType:
         """
         New case types are concepts. Publish them before creating cases.
         """
-        return self._create_resource(data, CaseType)
+        return self._create_resource(data, ZaakType)
 
-    def publish(self, *, identifier: str | UUID) -> CaseType:
+    def publish(self, *, identifier: str | UUID) -> ZaakType:
         """
         Open Zaak only publishes a case type with at least two status types, a result
         type, a role type, and published document types.
         """
         response = self._post(f"{self._detail_path(identifier)}/publish")
-        return self.process_response(response, CaseType)
+        return self.process_response(response, ZaakType)
 
 
-class DocumentTypeResource(BaseResource["CatalogiClient"]):
+class InformatieObjectTypeResource(BaseResource["CatalogiClient"]):
     base_path: ClassVar[str] = "informatieobjecttypen"
 
     def list(
-        self, *, params: DocumentTypeListParams | None = None
-    ) -> PaginatedResponseBody[DocumentType]:
+        self, *, params: InformatieObjectTypeListParams | None = None
+    ) -> PaginatedResponseBody[InformatieObjectType]:
         """
         Concept document types are left out unless you filter on ``status``.
         """
-        return self._list_resources(PaginatedResponseBody[DocumentType], params=params)
+        return self._list_resources(
+            PaginatedResponseBody[InformatieObjectType], params=params
+        )
 
-    def retrieve(self, *, identifier: str | UUID) -> DocumentType:
-        return self._retrieve_resource(identifier, DocumentType)
+    def retrieve(self, *, identifier: str | UUID) -> InformatieObjectType:
+        return self._retrieve_resource(identifier, InformatieObjectType)
 
-    def create(self, *, data: DocumentTypeCreateData) -> DocumentType:
+    def create(self, *, data: InformatieObjectTypeCreateData) -> InformatieObjectType:
         """
         New document types are concepts and must be published before the case type.
         """
-        return self._create_resource(data, DocumentType)
+        return self._create_resource(data, InformatieObjectType)
 
-    def publish(self, *, identifier: str | UUID) -> DocumentType:
+    def publish(self, *, identifier: str | UUID) -> InformatieObjectType:
         response = self._post(f"{self._detail_path(identifier)}/publish")
-        return self.process_response(response, DocumentType)
+        return self.process_response(response, InformatieObjectType)
 
 
-class CaseTypeDocumentTypeResource(BaseResource["CatalogiClient"]):
+class ZaakTypeInformatieObjectTypeResource(BaseResource["CatalogiClient"]):
     """
     Which document types can be added to cases of a case type.
     """
 
     base_path: ClassVar[str] = "zaaktype-informatieobjecttypen"
 
-    def create(self, *, data: CaseTypeDocumentTypeCreateData) -> CaseTypeDocumentType:
-        return self._create_resource(data, CaseTypeDocumentType)
+    def create(
+        self, *, data: ZaakTypeInformatieObjectTypeCreateData
+    ) -> ZaakTypeInformatieObjectType:
+        return self._create_resource(data, ZaakTypeInformatieObjectType)
 
 
 class StatusTypeResource(BaseResource["CatalogiClient"]):
@@ -129,34 +133,34 @@ class StatusTypeResource(BaseResource["CatalogiClient"]):
         return self._create_resource(data, StatusType)
 
 
-class ResultTypeResource(BaseResource["CatalogiClient"]):
+class ResultaatTypeResource(BaseResource["CatalogiClient"]):
     base_path: ClassVar[str] = "resultaattypen"
 
     def list(
-        self, *, params: ResultTypeListParams | None = None
-    ) -> PaginatedResponseBody[ResultType]:
-        return self._list_resources(PaginatedResponseBody[ResultType], params=params)
+        self, *, params: ResultaatTypeListParams | None = None
+    ) -> PaginatedResponseBody[ResultaatType]:
+        return self._list_resources(PaginatedResponseBody[ResultaatType], params=params)
 
-    def retrieve(self, *, identifier: str | UUID) -> ResultType:
-        return self._retrieve_resource(identifier, ResultType)
+    def retrieve(self, *, identifier: str | UUID) -> ResultaatType:
+        return self._retrieve_resource(identifier, ResultaatType)
 
-    def create(self, *, data: ResultTypeCreateData) -> ResultType:
+    def create(self, *, data: ResultaatTypeCreateData) -> ResultaatType:
         """
         Open Zaak checks the Selectielijst URLs against the public Selectielijst API.
         """
-        return self._create_resource(data, ResultType)
+        return self._create_resource(data, ResultaatType)
 
 
-class RoleTypeResource(BaseResource["CatalogiClient"]):
+class RolTypeResource(BaseResource["CatalogiClient"]):
     base_path: ClassVar[str] = "roltypen"
 
     def list(
-        self, *, params: RoleTypeListParams | None = None
-    ) -> PaginatedResponseBody[RoleType]:
-        return self._list_resources(PaginatedResponseBody[RoleType], params=params)
+        self, *, params: RolTypeListParams | None = None
+    ) -> PaginatedResponseBody[RolType]:
+        return self._list_resources(PaginatedResponseBody[RolType], params=params)
 
-    def retrieve(self, *, identifier: str | UUID) -> RoleType:
-        return self._retrieve_resource(identifier, RoleType)
+    def retrieve(self, *, identifier: str | UUID) -> RolType:
+        return self._retrieve_resource(identifier, RolType)
 
-    def create(self, *, data: RoleTypeCreateData) -> RoleType:
-        return self._create_resource(data, RoleType)
+    def create(self, *, data: RolTypeCreateData) -> RolType:
+        return self._create_resource(data, RolType)

@@ -11,7 +11,7 @@ ZGW APIs Client is a strongly typed HTTP client library for the APIs implementin
 Features
 ========
 
-* Resource-driven Python API, e.g. ``cases_client.case.create(...)``
+* Resource-driven Python API, e.g. ``zaken_client.zaak.create(...)``
 * Fully type-annotated for type safety and editor autocomplete support
 * Built on top of requests and `msgspec <https://msgspec.dev/>`_
 

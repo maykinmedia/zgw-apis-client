@@ -3,22 +3,22 @@ from collections.abc import MutableMapping
 from ape_pie import APIClient
 from ape_pie.typing import ConfigAdapter
 
-from .resources.cases import (
-    CaseDocumentResource,
-    CaseResource,
-    RoleResource,
-    StatusResource,
-)
 from .resources.catalogi import (
-    CaseTypeDocumentTypeResource,
-    CaseTypeResource,
-    CatalogueResource,
-    DocumentTypeResource,
-    ResultTypeResource,
-    RoleTypeResource,
+    CatalogusResource,
+    InformatieObjectTypeResource,
+    ResultaatTypeResource,
+    RolTypeResource,
     StatusTypeResource,
+    ZaakTypeInformatieObjectTypeResource,
+    ZaakTypeResource,
 )
-from .resources.documents import DocumentResource
+from .resources.documenten import EnkelvoudigInformatieObjectResource
+from .resources.zaken import (
+    RolResource,
+    StatusResource,
+    ZaakInformatieObjectResource,
+    ZaakResource,
+)
 
 
 class ZGWClient(APIClient):
@@ -64,29 +64,29 @@ class CatalogiClient(ZGWClient):
     Client class for the catalogue API ("Catalogi API").
     """
 
-    catalogue = CatalogueResource()
-    case_type = CaseTypeResource()
-    case_type_document_type = CaseTypeDocumentTypeResource()
-    document_type = DocumentTypeResource()
-    status_type = StatusTypeResource()
-    result_type = ResultTypeResource()
-    role_type = RoleTypeResource()
+    catalogus = CatalogusResource()
+    zaaktype = ZaakTypeResource()
+    zaaktype_informatieobjecttype = ZaakTypeInformatieObjectTypeResource()
+    informatieobjecttype = InformatieObjectTypeResource()
+    statustype = StatusTypeResource()
+    resultaattype = ResultaatTypeResource()
+    roltype = RolTypeResource()
 
 
-class CasesClient(ZGWClient):
+class ZakenClient(ZGWClient):
     """
     Client class for the cases API ("Zaken API").
     """
 
-    case = CaseResource()
+    zaak = ZaakResource()
     status = StatusResource()
-    role = RoleResource()
-    case_document = CaseDocumentResource()
+    rol = RolResource()
+    zaakinformatieobject = ZaakInformatieObjectResource()
 
 
-class DocumentsClient(ZGWClient):
+class DocumentenClient(ZGWClient):
     """
     Client class for the documents API ("Documenten API").
     """
 
-    document = DocumentResource()
+    enkelvoudiginformatieobject = EnkelvoudigInformatieObjectResource()

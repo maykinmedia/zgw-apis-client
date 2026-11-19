@@ -71,7 +71,7 @@ class Processobject(BaseSchemaStruct):
     registratie: str
 
 
-class CaseListParams(PaginationParams):
+class ZaakListParams(PaginationParams):
     bronorganisatie: str | UnsetType = UNSET
     identificatie: str | UnsetType = UNSET
     zaaktype: str | UnsetType = UNSET
@@ -87,7 +87,7 @@ class CaseListParams(PaginationParams):
     ordering: str | UnsetType = UNSET
 
 
-class CaseCreateData(BaseSchemaStruct):
+class ZaakCreateData(BaseSchemaStruct):
     zaaktype: URL
     bronorganisatie: str
     verantwoordelijke_organisatie: str
@@ -110,7 +110,7 @@ class CaseCreateData(BaseSchemaStruct):
     opdrachtgevende_organisatie: str | UnsetType = UNSET
 
 
-class Case(BaseSchemaStruct):
+class Zaak(BaseSchemaStruct):
     url: str
     uuid: UUID
     identificatie: str = ""
@@ -189,7 +189,7 @@ class Status(BaseSchemaStruct):
     zaakinformatieobjecten: Sequence[str]
 
 
-class RoleListParams(PaginationParams):
+class RolListParams(PaginationParams):
     zaak: str | UnsetType = UNSET
     roltype: str | UnsetType = UNSET
     betrokkene: str | UnsetType = UNSET
@@ -213,9 +213,9 @@ class MedewerkerIdentificatie(BaseSchemaStruct):
     voorvoegsel_achternaam: str = ""
 
 
-# We only work with employees, so only EmployeeRole has a typed identification. The
+# We only work with employees, so only MedewerkerRol has a typed identification. The
 # other types are there so roles added by other systems (e.g. the applicant) still load.
-class BaseRole(BaseSchemaStruct, tag_field="betrokkeneType"):
+class BaseRol(BaseSchemaStruct, tag_field="betrokkeneType"):
     url: str
     uuid: UUID
     zaak: str
@@ -237,36 +237,36 @@ class BaseRole(BaseSchemaStruct, tag_field="betrokkeneType"):
         return self.__struct_config__.tag  # pyright: ignore[reportReturnType]
 
 
-class EmployeeRole(BaseRole, tag="medewerker"):
+class MedewerkerRol(BaseRol, tag="medewerker"):
     betrokkene_identificatie: MedewerkerIdentificatie | None = None
 
 
-class NaturalPersonRole(BaseRole, tag="natuurlijk_persoon"):
+class NatuurlijkPersoonRol(BaseRol, tag="natuurlijk_persoon"):
     betrokkene_identificatie: dict[str, object] | None = None
 
 
-class NonNaturalPersonRole(BaseRole, tag="niet_natuurlijk_persoon"):
+class NietNatuurlijkPersoonRol(BaseRol, tag="niet_natuurlijk_persoon"):
     betrokkene_identificatie: dict[str, object] | None = None
 
 
-class BranchRole(BaseRole, tag="vestiging"):
+class VestigingRol(BaseRol, tag="vestiging"):
     betrokkene_identificatie: dict[str, object] | None = None
 
 
-class OrganisationalUnitRole(BaseRole, tag="organisatorische_eenheid"):
+class OrganisatorischeEenheidRol(BaseRol, tag="organisatorische_eenheid"):
     betrokkene_identificatie: dict[str, object] | None = None
 
 
-type Role = (
-    EmployeeRole
-    | NaturalPersonRole
-    | NonNaturalPersonRole
-    | BranchRole
-    | OrganisationalUnitRole
+type Rol = (
+    MedewerkerRol
+    | NatuurlijkPersoonRol
+    | NietNatuurlijkPersoonRol
+    | VestigingRol
+    | OrganisatorischeEenheidRol
 )
 
 
-class EmployeeRoleCreateData(
+class MedewerkerRolCreateData(
     BaseSchemaStruct, tag_field="betrokkeneType", tag="medewerker"
 ):
     zaak: URL
@@ -283,12 +283,12 @@ class EmployeeRoleCreateData(
     betrokkene_type: ClassVar[BetrokkeneType] = "medewerker"
 
 
-class CaseDocumentListParams(BaseParams):
+class ZaakInformatieObjectListParams(BaseParams):
     zaak: str | UnsetType = UNSET
     informatieobject: str | UnsetType = UNSET
 
 
-class CaseDocumentCreateData(BaseSchemaStruct):
+class ZaakInformatieObjectCreateData(BaseSchemaStruct):
     zaak: URL
     informatieobject: URL
     """
@@ -300,7 +300,7 @@ class CaseDocumentCreateData(BaseSchemaStruct):
     status: URL | None | UnsetType = UNSET
 
 
-class CaseDocument(BaseSchemaStruct):
+class ZaakInformatieObject(BaseSchemaStruct):
     url: str
     uuid: UUID
     informatieobject: str

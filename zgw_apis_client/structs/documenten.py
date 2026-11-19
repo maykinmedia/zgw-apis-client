@@ -11,7 +11,7 @@ from msgspec import UNSET, UnsetType
 from .base import BaseSchemaStruct, PaginationParams
 from .common import URL, Vertrouwelijkheidaanduiding
 
-type DocumentStatus = Literal[
+type InformatieObjectStatus = Literal[
     "in_bewerking", "ter_vaststelling", "definitief", "gearchiveerd"
 ]
 
@@ -53,7 +53,7 @@ class BestandsDeel(BaseSchemaStruct):
     lock: str = ""
 
 
-class DocumentListParams(PaginationParams):
+class EnkelvoudigInformatieObjectListParams(PaginationParams):
     bronorganisatie: str | UnsetType = UNSET
     identificatie: str | UnsetType = UNSET
     informatieobjecttype: str | UnsetType = UNSET
@@ -64,7 +64,7 @@ class DocumentListParams(PaginationParams):
     ordering: str | UnsetType = UNSET
 
 
-class DocumentCreateData(BaseSchemaStruct):
+class EnkelvoudigInformatieObjectCreateData(BaseSchemaStruct):
     bronorganisatie: str
     creatiedatum: date
     titel: str
@@ -83,7 +83,7 @@ class DocumentCreateData(BaseSchemaStruct):
     formaat: str | UnsetType = UNSET
     identificatie: str | UnsetType = UNSET
     vertrouwelijkheidaanduiding: Vertrouwelijkheidaanduiding | UnsetType = UNSET
-    status: DocumentStatus | UnsetType = UNSET
+    status: InformatieObjectStatus | UnsetType = UNSET
     link: str | UnsetType = UNSET
     beschrijving: str | UnsetType = UNSET
     ontvangstdatum: date | None | UnsetType = UNSET
@@ -94,7 +94,7 @@ class DocumentCreateData(BaseSchemaStruct):
     tonen_aan_initiator: bool | UnsetType = UNSET
 
 
-class Document(BaseSchemaStruct):
+class EnkelvoudigInformatieObject(BaseSchemaStruct):
     url: str
     identificatie: str = ""
     bronorganisatie: str
@@ -102,7 +102,7 @@ class Document(BaseSchemaStruct):
     titel: str
     vertrouwelijkheidaanduiding: Vertrouwelijkheidaanduiding | Literal[""] = ""
     auteur: str
-    status: DocumentStatus | Literal[""] = ""
+    status: InformatieObjectStatus | Literal[""] = ""
     formaat: str = ""
     taal: str
     versie: int
