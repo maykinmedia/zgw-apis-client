@@ -2,20 +2,13 @@
 Changelog
 =========
 
-0.2.0 (2026-11-??)
+0.2.0 (2026-11-19)
 ==================
 
 **New features**
 
-TBD
-
-**Bugfixes**
-
-TBD
-
-**Project maintenance**
-
-TBD
+* [maykinmedia/open-mzac#41] Added clients for the Catalogi API, Zaken API and
+  Documenten API (``CatalogiClient``, ``ZakenClient``, ``DocumentenClient``).
 
 0.1.0 (2026-11-11)
 ==================
