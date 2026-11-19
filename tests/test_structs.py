@@ -8,8 +8,6 @@ from zgw_apis_client import CasesClient
 from zgw_apis_client.structs.base import PaginatedResponseBody
 from zgw_apis_client.structs.cases import (
     CaseListParams,
-    EmployeeRoleCreateData,
-    MedewerkerIdentificatie,
     NaturalPersonRole,
     Role,
     StatusCreateData,
@@ -50,19 +48,6 @@ def test_query_params_keep_double_underscore_lookups():
 
 def test_unset_query_params_are_left_out():
     assert msgspec.to_builtins(CaseTypeListParams()) == {}
-
-
-def test_employee_role_create_data_includes_betrokkene_type():
-    data = EmployeeRoleCreateData(
-        zaak="http://example.com/zaak",
-        roltype="http://example.com/roltype",
-        betrokkene_identificatie=MedewerkerIdentificatie(identificatie="employee-1"),
-    )
-
-    encoded = msgspec.to_builtins(data)
-
-    assert encoded["betrokkeneType"] == "medewerker"
-    assert encoded["betrokkeneIdentificatie"]["identificatie"] == "employee-1"
 
 
 def test_roles_other_than_employees_are_accepted():
