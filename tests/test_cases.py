@@ -3,7 +3,6 @@ from datetime import UTC, date, datetime
 
 import pytest
 
-from tests.data import RSIN, PublishedCaseType, create_published_case_type
 from zgw_apis_client import CasesClient, CatalogiClient, DocumentsClient
 from zgw_apis_client.structs.cases import (
     Case,
@@ -19,6 +18,8 @@ from zgw_apis_client.structs.cases import (
     StatusListParams,
 )
 from zgw_apis_client.structs.documents import DocumentCreateData
+
+from .data import RSIN, PublishedCaseType, create_published_case_type
 
 
 @pytest.fixture

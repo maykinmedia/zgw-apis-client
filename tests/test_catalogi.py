@@ -1,13 +1,5 @@
 import pytest
 
-from tests.data import (
-    RSIN,
-    VALID_FROM,
-    create_catalogue,
-    create_concept_case_type,
-    create_document_type,
-    create_published_case_type,
-)
 from zgw_apis_client import CatalogiClient
 from zgw_apis_client.structs.catalogi import (
     CaseTypeListParams,
@@ -16,6 +8,15 @@ from zgw_apis_client.structs.catalogi import (
     ResultTypeListParams,
     RoleTypeListParams,
     StatusTypeListParams,
+)
+
+from .data import (
+    RSIN,
+    VALID_FROM,
+    create_catalogue,
+    create_concept_case_type,
+    create_document_type,
+    create_published_case_type,
 )
 
 

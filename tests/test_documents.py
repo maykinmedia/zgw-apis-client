@@ -3,10 +3,11 @@ from datetime import date
 
 import pytest
 
-from tests.data import RSIN, create_catalogue, create_document_type
 from zgw_apis_client import CatalogiClient, DocumentsClient
 from zgw_apis_client.structs.catalogi import DocumentType
 from zgw_apis_client.structs.documents import DocumentCreateData, DocumentListParams
+
+from .data import RSIN, create_catalogue, create_document_type
 
 
 @pytest.fixture

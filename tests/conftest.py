@@ -1,13 +1,14 @@
 import pytest
 
-from tests.helpers import (
+from zgw_apis_client import CasesClient, CatalogiClient, DocumentsClient
+
+from .helpers import (
     CATALOGI_API_ROOT,
     DOCUMENTEN_API_ROOT,
     ZAKEN_API_ROOT,
     OpenZaakServiceManager,
     generate_jwt,
 )
-from zgw_apis_client import CasesClient, CatalogiClient, DocumentsClient
 
 
 def pytest_addoption(parser):
