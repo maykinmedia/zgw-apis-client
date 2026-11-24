@@ -10,6 +10,8 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions: {}
+
 jobs:
   tests:
     runs-on: ubuntu-latest
@@ -65,5 +67,5 @@ jobs:
           python -m build
 
       - name: Publish a Python distribution to PyPI
-        # pinned to sha for v1.13.0
-        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e
+        # pinned to sha for v1.14.3
+        uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086
