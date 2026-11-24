@@ -1,5 +1,6 @@
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from unittest.mock import patch
+from uuid import UUID
 
 import msgspec
 import pytest
@@ -11,6 +12,7 @@ from zgw_apis_client.structs.zaken import (
     NatuurlijkPersoonRol,
     Rol,
     StatusCreateData,
+    Zaak,
     ZaakListParams,
 )
 
@@ -30,6 +32,41 @@ ROL = {
     "beginGeldigheid": None,
     "eindeGeldigheid": None,
 }
+
+
+@pytest.fixture
+def zaak() -> Zaak:
+    return Zaak(
+        url="http://example.com/zaken/api/v1/zaken/1",
+        uuid=UUID("d6a1c2e0-3b4f-4c5d-9e8f-0a1b2c3d4e5f"),
+        bronorganisatie="517439943",
+        zaaktype="http://example.com/catalogi/api/v1/zaaktypen/1",
+        verantwoordelijke_organisatie="517439943",
+        startdatum=date(2026, 2, 1),
+        einddatum=None,
+        laatst_gemuteerd=datetime(2026, 2, 1, 9, 0, tzinfo=UTC),
+        betalingsindicatie_weergave="",
+        deelzaken=[],
+        eigenschappen=[],
+        rollen=[],
+        status=None,
+        zaakinformatieobjecten=[],
+        zaakobjecten=[],
+        resultaat=None,
+    )
+
+
+@pytest.mark.parametrize(
+    ("einddatum", "expected"),
+    [(None, False), (date(2026, 2, 10), True)],
+    ids=["open", "closed"],
+)
+def test_zaak_is_closed_when_it_has_an_end_date(
+    zaak: Zaak, einddatum: date | None, expected: bool
+):
+    zaak.einddatum = einddatum
+
+    assert zaak.is_closed is expected
 
 
 def test_query_params_keep_double_underscore_lookups():

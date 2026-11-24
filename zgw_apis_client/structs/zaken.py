@@ -159,6 +159,17 @@ class Zaak(BaseSchemaStruct):
     startdatum_bewaartermijn: date | None = None
     processobject: Processobject | None = None
 
+    @property
+    def is_closed(self) -> bool:
+        """
+        Determine if the case is closed.
+
+        A closed case is defined as a case that has its end date ("einddatum") set. The
+        Zaken API is responsible for setting the end date when the final status is set
+        on the case.
+        """
+        return self.einddatum is not None
+
 
 class StatusListParams(PaginationParams):
     zaak: str | UnsetType = UNSET
